@@ -1,2 +1,2 @@
-# WP4-dev-IdPServer
+# dev-IdPServer
 Development repository for IdP Server
