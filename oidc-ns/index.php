@@ -6,11 +6,12 @@ if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != 1) { // force HTTPS
 ?>
 <html>
 <head>
-<title>OIDC demo server</title>
+<title>reTHINK IdP Services</title>
 </head>
-<body>
-<h1>OpenID connect test instance.</h1>
-<p>This is a demo server based on the <a href=http://nat.sakimura.org/>Nat Sakimura</a> PhPOIDC server*</p>
+<body style="background-color:yellow">
+<h1>
+<a href=https://rethink-project.eu/><img src="img/rethink.png"/></a>Identity Provider</h1>
+<p>This server is based on the <a href=http://nat.sakimura.org/>Nat Sakimura</a> PhPOIDC server*</p>
 <table border="0">
 <tr><td>To have a quick usage demo of client usage** :</td><td> <a href="demo/index.php">Client demo service</a></td></tr>
 <tr><td>To have a detailed usage demo of client usage :</td><td> <a href="phpRp/index.php">Complete rp demo</a></td></tr>
