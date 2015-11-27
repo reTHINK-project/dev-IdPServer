@@ -37,7 +37,7 @@ var oidc = require('openid-connect').oidc(options);
 
 
 // all environments
-app.set('port', process.env.PORT || 3001);
+app.set('port', process.env.PORT || 8080);
 app.use(logger('dev'));
 app.use(bodyParser());
 app.use(methodOverride());
