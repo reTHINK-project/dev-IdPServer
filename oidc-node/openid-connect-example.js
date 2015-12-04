@@ -91,41 +91,15 @@ var validateUser = function (req, next) {
 };
 
 var afterLogin = function (req, res, next) {
-    res.redirect(req.param('return_url')||'/user');
+    res.redirect(req.param('return_uri')||'/user');
 };
-
-var afterProxyLogin = function (req, res, next){
-    res.redirect('/proxy/done')
-}
 
 var loginError = function (err, req, res, next) {
     req.session.error = err.message;
     res.redirect(req.path);
 };
 
-app.post('/my/login', oidc.login(validateUser), afterProxyLogin, loginError);
-
-app.post('/proxy/login', oidc.login(validateUser), afterProxyLogin, loginError);
-
-app.get('/proxy/done', oidc.check(), function(req, res, next){
-    res.send("<script>"+
-        "var jsonString = {};"+
-        "var data = window.location.hash.substring(1).split('&').toString().split(/[=,]+/);"+
-        "for(var i=0; i<data.length; i+=2){jsonString[data[i]]=data[i+1];}"+
-        "var msg = JSON.stringify(jsonString);"+
-        //Unsecure send to all
-        "window.opener.postMessage(msg,\"*\");"+
-        "window.close();"+
-        "</script>");
-});
-
-function setCookie(cname, cvalue, exdays) {
-    var d = new Date();
-    d.setTime(d.getTime() + (exdays*24*60*60*1000));
-    var expires = "expires="+d.toUTCString();
-    document.cookie = cname + "=" + cvalue + "; " + expires;
-}
-
+app.post('/my/login', oidc.login(validateUser), afterLogin, loginError);
 
 app.all('/logout', oidc.removetokens(), function(req, res, next) {
     req.session.destroy();
@@ -343,11 +317,42 @@ app.get('/client/:id', oidc.use('client'), function(req, res, next){
   });
 });
 
+/* ---------------------------------------------------------------------------------------------- */
+/* -------------------------------- PROXY APP --------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
+
 app.get('/.well-known/idp-proxy/rethink-oidc', function(req, res, next){
-        res.sendFile(path.join(__dirname + '/public/javascripts/rethink-oidc.js'));
+    res.sendFile(path.join(__dirname + '/public/javascripts/rethink-oidc.js'));
 });
 
-app.get('/verify/', function(req, res, next){
+//authorization endpoint
+app.get('/proxy/authorize', oidc.auth());
+
+app.get('/proxy/done', oidc.check(), function(req, res, next){
+    res.send("<script>"+
+        "var jsonString = {};"+
+        "var data = window.location.hash.substring(1).split('&').toString().split(/[=,]+/);"+
+        "for(var i=0; i<data.length; i+=2){jsonString[data[i]]=data[i+1];}"+
+        "var msg = JSON.stringify(jsonString);"+
+        //Unsecure send to all
+        "window.opener.postMessage(msg,\"*\");"+
+        "window.close();"+
+        "</script>");
+});
+
+app.get('/proxy/key', oidc.use({policies: {loggedIn: false}, models: 'client'}), function(req, res, next) {
+  req.model.client.find({name: "rethink-oidc"}, function(err, client){
+    if (!err && client) {
+        var json = {}
+        json.key = client[0].key
+        res.send(json)
+    } else {
+        next(err)
+    }
+  });
+});
+
+app.get('/proxy/verify/', function(req, res, next){
     // sign with default (HMAC SHA256)
     var jwt = require('jsonwebtoken');
     var token = req.query.id_token;

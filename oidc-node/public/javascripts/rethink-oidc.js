@@ -13,31 +13,17 @@
 */
 //class NodeOIDCProxy {
   
-  var SOURCEURL = "http://luna.local:3001"
-  var REDIRECT = "http://luna.local:3001"
-  var LOGINPATH = "/user/authorize"
-  // Proxy downloaded from SOURCEURL+/.well-known/idp-proxy/+PROXYTYPE
-  var PROXYTYPE = "rethink-oidc"
-  var VERIFYPATH = "/verify"
-  var IDSCOPE = "openid"
-  var FULLSCOPE = "openid profile"
-  var TYPE       =   'id_token token';
-//    var TYPE       =   'code';
-  
-  
-  // Client ID is also public key for id_token verification (ATM)
-  var IDPROXYID = "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FH"+
-                  "U0liM0RRRUJBUVVBQTRHTkFEQ0JpUUtCZ1FDNEROVTd0TTcwS0o4"+
-                  "MkhNSDFhL3JNV0JWbwpWckxyL0Q0NXJwSkFGeSsxUjdIdWJLdGZS"+
-                  "c2xoZ0JZaHdnYWExQmlhazhBemRzWGdxeFAva0orUjYybE9aUWNO"+
-                  "Cm0vY091UWVlcDIzTzQ2TlRFYU5aUFRFdDRPOGhONVhMYUoySEE4"+
-                  "YU5NNlBIbXlYTnN4REFESjJkMzdVTlNWY0EKSHdBRnFHeVNFVkI2"+
-                  "ZjBPamdRSURBUUFCCi0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo="
+  var SOURCEURL = "http://luna.local:3001",
+      AUTHPATH = "/proxy/authorize",
+      VERIFYPATH = "/proxy/verify",
+      DONEPATH = "/proxy/done",
+      KEYPATH = '/proxy/key',
+      PROXYTYPE = "rethink-oidc",
+      IDSCOPE = "openid",
+      FULLSCOPE = "openid profile",
+      TYPE       =   'id_token token';
+  //var TYPE       =   'code';
                   
-                  
-  var _url = SOURCEURL+LOGINPATH+'?scope=' + IDSCOPE + '&client_id=' + IDPROXYID +
-            '&redirect_uri=' + SOURCEURL + '&response_type=' + TYPE +
-            '&nonce=' + '01987'
 //  /**
 //  * USER'S OWN IDENTITY
 //  */
@@ -66,35 +52,31 @@
 //  * @return {Promise}         Promise         IDToken
 //  */
   function loginWithRP() {
-
-    var LOGOUT     =   'http://accounts.google.com/Logout';
-    var id_token;
-    var acToken;
-    var tokenType;
-    var expiresIn;
-    var user;
-    var tokenID;
-    var loggedIn = false;
-    
     return new Promise(function(resolve, reject) {
-
-      // this will open a window with the URL which will open a page sent by google for the user to insert the credentials
-      // when the google validates the credentials then send a access token
-      var win = window.open(_url, 'openIDrequest', 'width=800, height=600');
-      
-      // respond to events
-      window.addEventListener('message',function(event) {
-        if(event.origin !== SOURCEURL) return;
-        
-        var res = JSON.parse(event.data)
-        validateAssertion(res.id_token).then(function(response) {
-          resolve(response)
-        }, function(error) {
-          reject(error);
-        })
-      },false);
-      
-    });
+      getProxyKey().then(function(response){
+        var IDPROXYID = response
+        var _url = SOURCEURL+AUTHPATH+'?scope=' + IDSCOPE + '&client_id=' + IDPROXYID +
+                '&redirect_uri=' + SOURCEURL + DONEPATH + '&response_type=' + TYPE +
+                '&nonce=' + 'N-'+Math.random()
+        // this will open a window with the URL which will open a page sent by google for the user to insert the credentials
+        // when the google validates the credentials then send a access token
+        var win = window.open(_url, 'openIDrequest', 'width=800, height=600');
+          
+        // respond to events
+        window.addEventListener('message',function(event) {
+          if(event.origin !== SOURCEURL) return;
+            
+          var res = JSON.parse(event.data)
+          validateAssertion(res.id_token).then(function(response) {
+            resolve(response)
+          }, function(error) {
+            reject(error);
+          })
+        },false);
+      }, function(error){
+        reject(error)  
+      })
+    })
   }
 
 
@@ -108,16 +90,11 @@
   * @param  {DOMString} assertion assertion
   */
   function validateAssertion(assertion) {
-    // Split using '.'
-    // Header
-    // Body
-    // Signature
-    // Get key from server URL
-    // Verify Signature
-    
     return new Promise(function(resolve, reject) {
-      var xmlhttp = new XMLHttpRequest();
-      xmlhttp.onreadystatechange = function() {
+      getProxyKey().then(function(response){
+        var IDPROXYID = response
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
           var res = JSON.parse(xmlhttp.responseText);
           if (res.error != undefined) {
@@ -129,6 +106,9 @@
       };
       xmlhttp.open("GET", SOURCEURL+VERIFYPATH+"?key="+IDPROXYID+"&id_token="+assertion, true);
       xmlhttp.send();
+      }, function(error){
+        reject(error)  
+      })  
     })
   }
 
@@ -162,15 +142,22 @@
 
 //}
 
-function getCookie(cname) {
-    var name = cname + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0; i<ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1);
-        if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
-    }
-    return "";
-}
+  function getProxyKey(){
+    return new Promise(function(resolve, reject) {
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+          var res = JSON.parse(xmlhttp.responseText);
+          if (res.error != undefined) {
+            reject(res.error)
+          } else {
+            resolve(res.key)
+          }
+        }
+      };
+      xmlhttp.open("GET", SOURCEURL+KEYPATH, true);
+      xmlhttp.send();
+    })
+  }
 
 console.log("Proxy loaded")
