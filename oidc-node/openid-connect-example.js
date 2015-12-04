@@ -22,6 +22,9 @@ var crypto = require('crypto'),
 
 var app = express();
 
+var env = process.env.NODE_ENV || 'development'
+var config = (env == 'development' ? require('./dev_config') : require('./config'));
+
 var options = {
   login_url: '/my/login',
   consent_url: '/user/consent',
@@ -37,13 +40,19 @@ var oidc = require('openid-connect').oidc(options);
 
 
 // all environments
-app.set('port', process.env.PORT || 3001);
+app.set('port', config.node.port);
 app.use(logger('dev'));
 app.use(bodyParser());
 app.use(methodOverride());
 app.use(cookieParser('Some Secret!!!'));
-app.use(expressSession({store: new rs({host: '127.0.0.1', port: 6379}), secret: 'Some Secret!!!'}));
+app.use(expressSession({store: new rs({host: config.redis.host, port: config.redis.port}), secret: 'Some Secret!!!'}));
 // app.use(app.router);
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
 //redirect to login
 app.get('/', function(req, res) {
@@ -59,10 +68,20 @@ app.get('/my/login', function(req, res, next) {
   res.send('<html>'+head+body+'</html>');
 });
 
+//Login form (I use email as user name)
+app.get('/proxy/login', function(req, res, next) {
+  var head = '<head><title>Login</title></head>';
+  var inputs = '<input type="text" name="email" placeholder="Enter Email"/><input type="password" name="password" placeholder="Enter Password"/>';
+  var error = req.session.error?'<div>'+req.session.error+'</div>':'';
+  var body = '<body><h1>Login</h1><form method="POST">'+inputs+'<input type="submit"/></form>'+error;
+  res.send('<html>'+head+body+'</html>');
+});
+
 var validateUser = function (req, next) {
   delete req.session.error;
   req.model.user.findOne({email: req.body.email}, function(err, user) {
       if(!err && user && user.samePassword(req.body.password)) {
+        console.log(user+" "+req.body.password+"=?"+user.password)
         return next(null, user);
       } else {
         var error = new Error('Username or password incorrect.');
@@ -75,12 +94,37 @@ var afterLogin = function (req, res, next) {
     res.redirect(req.param('return_url')||'/user');
 };
 
+var afterProxyLogin = function (req, res, next){
+    res.redirect('/proxy/done')
+}
+
 var loginError = function (err, req, res, next) {
     req.session.error = err.message;
     res.redirect(req.path);
 };
 
-app.post('/my/login', oidc.login(validateUser), afterLogin, loginError);
+app.post('/my/login', oidc.login(validateUser), afterProxyLogin, loginError);
+
+app.post('/proxy/login', oidc.login(validateUser), afterProxyLogin, loginError);
+
+app.get('/proxy/done', oidc.check(), function(req, res, next){
+    res.send("<script>"+
+        "var jsonString = {};"+
+        "var data = window.location.hash.substring(1).split('&').toString().split(/[=,]+/);"+
+        "for(var i=0; i<data.length; i+=2){jsonString[data[i]]=data[i+1];}"+
+        "var msg = JSON.stringify(jsonString);"+
+        //Unsecure send to all
+        "window.opener.postMessage(msg,\"*\");"+
+        "window.close();"+
+        "</script>");
+});
+
+function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires="+d.toUTCString();
+    document.cookie = cname + "=" + cvalue + "; " + expires;
+}
 
 
 app.all('/logout', oidc.removetokens(), function(req, res, next) {
@@ -164,6 +208,10 @@ app.post('/user/create', oidc.use({policies: {loggedIn: false}, models: 'user'})
           req.body.name = req.body.given_name+' '+(req.body.middle_name?req.body.middle_name+' ':'')+req.body.family_name;
           req.model.user.create(req.body, function(err, user) {
              if(err || !user) {
+                
+        console.log("cannot do")
+        console.log(err)
+        console.log(user)
                  req.session.error=err?err:'User could not be created.';
                  res.redirect(req.path);
              } else {
@@ -220,6 +268,10 @@ app.get('/client/register', oidc.use('client'), function(req, res, next) {
                     label: 'Redirect Uri',
                     html: '<input type="text" id="redirect_uris" name="redirect_uris" placeholder="Redirect Uri"/>'
                 },
+                required_sig: {
+                    label: 'Signature Algorithm',
+                    html: '<select id="required_sig" name="required_sig"> <option value="HS256">HS256</option> <option value="RS256">RS256</option> </select>'
+                },
                 key: {
                     label: 'Client Key',
                     html: '<span>'+key+'</span>'
@@ -248,6 +300,7 @@ app.get('/client/register', oidc.use('client'), function(req, res, next) {
 //process client register
 app.post('/client/register', oidc.use('client'), function(req, res, next) {
     delete req.session.error;
+  req.body.required_sig = req.body.required_sig;
   req.body.key = req.session.register_client.key;
   req.body.secret = req.session.register_client.secret;
   req.body.user = req.session.user;
@@ -278,7 +331,7 @@ app.get('/client/:id', oidc.use('client'), function(req, res, next){
       if(err) {
           next(err);
       } else if(client) {
-          var html = '<h1>Client '+client.name+' Page</h1><div><a href="/client">Go back</a></div><ul><li>Key: '+client.key+'</li><li>Secret: '+client.secret+'</li><li>Redirect Uris: <ul>';
+          var html = '<h1>Client '+client.name+' Page</h1><div><a href="/client">Go back</a></div><ul><li>Requested signature: '+client.required_sig+'</li><li>Key: '+client.key+'</li><li>Secret: '+client.secret+'</li><li>Redirect Uris: <ul>';
           client.redirect_uris.forEach(function(uri){
              html += '<li>'+uri+'</li>';
           });
@@ -289,6 +342,25 @@ app.get('/client/:id', oidc.use('client'), function(req, res, next){
       }
   });
 });
+
+app.get('/.well-known/idp-proxy/rethink-oidc', function(req, res, next){
+        res.sendFile(path.join(__dirname + '/public/javascripts/rethink-oidc.js'));
+});
+
+app.get('/verify/', function(req, res, next){
+    // sign with default (HMAC SHA256)
+    var jwt = require('jsonwebtoken');
+    var token = req.query.id_token;
+    var cert = new Buffer(req.query.key, 'base64').toString('binary')
+    
+    jwt.verify(token, cert, { algorithms: ['RS256'] }, function(err, decoded) {
+      res.json({
+        error: err,
+        id_token: decoded
+      });
+    });
+});
+
 
 app.get('/test/clear', function(req, res, next){
     test = {status: 'new'};

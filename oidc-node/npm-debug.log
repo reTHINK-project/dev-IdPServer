@@ -1,0 +1,42 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node', '/usr/local/bin/npm', 'start' ]
+2 info using npm@3.3.6
+3 info using node@v5.0.0
+4 verbose run-script [ 'prestart', 'start', 'poststart' ]
+5 info lifecycle openid-connect-example@0.0.3~prestart: openid-connect-example@0.0.3
+6 silly lifecycle openid-connect-example@0.0.3~prestart: no script for prestart, continuing
+7 info lifecycle openid-connect-example@0.0.3~start: openid-connect-example@0.0.3
+8 verbose lifecycle openid-connect-example@0.0.3~start: unsafe-perm in lifecycle true
+9 verbose lifecycle openid-connect-example@0.0.3~start: PATH: /usr/local/lib/node_modules/npm/bin/node-gyp-bin:/Users/kcorre/workspace/WP4Dev/dev-IdPServer/oidc-node/node_modules/.bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/usr/texbin
+10 verbose lifecycle openid-connect-example@0.0.3~start: CWD: /Users/kcorre/workspace/WP4Dev/dev-IdPServer/oidc-node
+11 silly lifecycle openid-connect-example@0.0.3~start: Args: [ '-c', 'node openid-connect-example.js' ]
+12 silly lifecycle openid-connect-example@0.0.3~start: Returned: code: 1  signal: null
+13 info lifecycle openid-connect-example@0.0.3~start: Failed to exec start script
+14 verbose stack Error: openid-connect-example@0.0.3 start: `node openid-connect-example.js`
+14 verbose stack Exit status 1
+14 verbose stack     at EventEmitter.<anonymous> (/usr/local/lib/node_modules/npm/lib/utils/lifecycle.js:233:16)
+14 verbose stack     at emitTwo (events.js:87:13)
+14 verbose stack     at EventEmitter.emit (events.js:172:7)
+14 verbose stack     at ChildProcess.<anonymous> (/usr/local/lib/node_modules/npm/lib/utils/spawn.js:24:14)
+14 verbose stack     at emitTwo (events.js:87:13)
+14 verbose stack     at ChildProcess.emit (events.js:172:7)
+14 verbose stack     at maybeClose (internal/child_process.js:818:16)
+14 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:211:5)
+15 verbose pkgid openid-connect-example@0.0.3
+16 verbose cwd /Users/kcorre/workspace/WP4Dev/dev-IdPServer/oidc-node
+17 error Darwin 14.3.0
+18 error argv "/usr/local/bin/node" "/usr/local/bin/npm" "start"
+19 error node v5.0.0
+20 error npm  v3.3.6
+21 error code ELIFECYCLE
+22 error openid-connect-example@0.0.3 start: `node openid-connect-example.js`
+22 error Exit status 1
+23 error Failed at the openid-connect-example@0.0.3 start script 'node openid-connect-example.js'.
+23 error This is most likely a problem with the openid-connect-example package,
+23 error not with npm itself.
+23 error Tell the author that this fails on your system:
+23 error     node openid-connect-example.js
+23 error You can get their info via:
+23 error     npm owner ls openid-connect-example
+23 error There is likely additional logging output above.
+24 verbose exit [ 1, true ]
