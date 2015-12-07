@@ -1,7 +1,7 @@
 To install the Node.js OIDC server providing the WebRTC IDPProxy:  
 clone the repository & launch  
 
-_docker-compose up_
+_docker-compose up -d_
 
 OR
 
