@@ -1,2 +1,1 @@
-# dev-IdPServer
-Development repository for IdP Server
+docker-compose up

@@ -1,29 +1,10 @@
 {
-  "name": "OpenShift-Sample-App",
-  "version": "1.0.0",
-  "description": "OpenShift Sample Application",
-  "keywords": [
-    "OpenShift",
-    "Node.js",
-    "application",
-    "openshift"
-  ],
-  "author": {
-    "name": "OpenShift",
-    "email": "ramr@example.org",
-    "url": "http://www.openshift.com/"
+  "name": "openid-connect-example",
+  "version": "0.0.3",
+  "private": true,
+  "scripts": {
+    "start": "node openid-connect-example.js"
   },
-  "homepage": "http://www.openshift.com/",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/openshift/origin-server"
-  },
-
-  "engines": {
-    "node": ">= 0.10.0",
-    "npm": ">= 1.0.0"
-  },
-
   "dependencies": {
     "body-parser": "^1.14.1",
     "connect-redis": "^2.5.1",
@@ -32,13 +13,10 @@
     "express": "^4.13.3",
     "express-session": "^1.11.3",
     "extend": "^3.0.0",
+    "jsonwebtoken": "^5.4.1",
     "method-override": "^2.3.5",
     "morgan": "^1.6.1",
-    "openid-connect": "^1.2.4"
-  },
-  "devDependencies": {},
-  "bundleDependencies": [],
-
-  "private": true,
-  "main": "server.js"
+    "openid-connect": "^1.2.4",
+    "ursa": "^0.9.1"
+  }
 }
