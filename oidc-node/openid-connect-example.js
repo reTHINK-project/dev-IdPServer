@@ -23,9 +23,18 @@ var crypto = require('crypto'),
 var app = express();
 
 var env = process.env.NODE_ENV || 'development'
-var config = (env == 'development' ? require('./dev_config') : require('./config'));
+//var config = (env == 'development' ? require('./dev_config') : require('./config'));
+var config = require('./config');
 
 var options = {
+  adapters: {
+    redis: {
+        defaults: {
+            port: config.redis.port,
+            host: config.redis.host
+        }
+    }
+  },
   login_url: '/my/login',
   consent_url: '/user/consent',
   scopes: {

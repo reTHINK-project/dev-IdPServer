@@ -13,7 +13,7 @@
 */
 //class NodeOIDCProxy {
   
-  var SOURCEURL = "http://luna.local:3001",
+  var SOURCEURL = "http://192.168.99.100:8080",
       AUTHPATH = "/proxy/authorize",
       VERIFYPATH = "/proxy/verify",
       DONEPATH = "/proxy/done",
