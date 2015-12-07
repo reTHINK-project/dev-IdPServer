@@ -11,6 +11,4 @@ RUN	cd /src; npm install
 # Overwrite openid-connect
 COPY	./openid-connect/index.js node-modules/openid-connect/index.js
 
-RUN	npm start
-
 EXPOSE	8080
