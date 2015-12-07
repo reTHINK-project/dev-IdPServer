@@ -1,12 +1,16 @@
 FROM node:onbuild
 
 # Get Sources
-COPY	. /src
+COPY	./openid-connect-server.js /src/
+COPY	./package.json /src/
+COPY 	./public /src/
+COPY	./config.js /src/
 # Clean node_modules
-CMD 	["rm", "-rf", "node_modules"]
 RUN	cd /src; npm install
  
 # Overwrite openid-connect
-COPY	./node_modules/openid-connect/index.js node-modules/openid-connect/index.js
+COPY	./openid-connect/index.js node-modules/openid-connect/index.js
+
+RUN	npm start
 
 EXPOSE	8080

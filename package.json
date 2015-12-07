@@ -1,9 +1,9 @@
 {
-  "name": "openid-connect-example",
+  "name": "openid-connect-server",
   "version": "0.0.3",
   "private": true,
   "scripts": {
-    "start": "node openid-connect-example.js"
+    "start": "node openid-connect-server.js"
   },
   "dependencies": {
     "body-parser": "^1.14.1",
