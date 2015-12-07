@@ -49,7 +49,11 @@ var oidc = require('openid-connect').oidc(options);
 
 
 // all environments
+<<<<<<< HEAD
+app.set('port', process.env.PORT || 8080);
+=======
 app.set('port', config.node.port);
+>>>>>>> a80c8d576dc81fc6721f574707cd5b931841b2da
 app.use(logger('dev'));
 app.use(bodyParser());
 app.use(methodOverride());
