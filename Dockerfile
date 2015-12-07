@@ -7,8 +7,8 @@ COPY 	./public /src/
 COPY	./config.js /src/
 # Clean node_modules
 RUN	cd /src; npm install
- 
+RUN ls
 # Overwrite openid-connect
-COPY	./openid-connect/index.js node-modules/openid-connect/index.js
+COPY	./openid-connect/index.js /src/node_modules/openid-connect/index.js
 
 EXPOSE	8080
