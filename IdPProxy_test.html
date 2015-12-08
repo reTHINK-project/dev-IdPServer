@@ -4,19 +4,37 @@
     <meta charset="utf-8">
 
     <title>IdP Proxy NODE/OPENID CONNECT Test page</title>
-
-<script src="http://idp.rethink.orange-labs.fr:80/.well-known/idp-proxy/rethink-oidc"></script>
-<!-- <script src="public/javascripts/rethink-oidc.js"></script> -->
 	
-<script>
+  </head>
+  <body>
+  <!--<script src="http://192.168.99.100:8080/.well-known/idp-proxy/rethink-oidc"></script>-->
+  <script id="proxy" type="text/javascript"></script>
+  <script>
+  function test(url, method) {
+	console.log(url+"/.well-known/idp-proxy/"+method)
+	document.getElementById('proxy').src= url+'/.well-known/idp-proxy/'+method;
+	return false;
+  }
+  function login() {
 	loginWithRP().then(function(response) {
 	  console.log("id_token :", response);
 	  console.log("token validated")
 	}, function(error) {
 	  console.error("error", error);
 	});
+	return false;
+  }
+  
     //validateAssertion(id_token)
-</script>
+  </script>
+  <form onsubmit="return test(this.url.value, this.method.value);">
+	<input type="text" id="url" name="url" placeholder="IdP URL"/>
+	<input type="text" id="method" name="method" placeholder="IdP Proxy Method"/>
+	<input type="submit" value="Load"/>
+  </form>
+  <form onsubmit="return login();">
+	<input type="submit" value="Login"/>
+  </form>
 	
   </body>
 </html>

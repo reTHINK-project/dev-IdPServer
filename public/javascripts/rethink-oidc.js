@@ -13,7 +13,7 @@
 */
 //class NodeOIDCProxy {
   
-  var SOURCEURL = "http://idp.rethink.orange-labs.fr:80",
+  var SOURCEURL = "http://192.168.99.100:8080",
       AUTHPATH = "/proxy/authorize",
       VERIFYPATH = "/proxy/verify",
       DONEPATH = "/proxy/done",
