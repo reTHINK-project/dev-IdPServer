@@ -17,7 +17,7 @@ npm start
 The server can be either dockerized manually or using docker-compose. Dockerfile and docker-compose.yml are provided at the root of the project.
 
 ```
-_docker-compose up -d_
+docker-compose up -d
 ```
 OR
 
