@@ -43,7 +43,7 @@ After creating a user, register a client on **/client/register**. This client se
 ## Test
 The general state of the server can be tested on **/test/clear**
 
-IdP Proxy mechanism can be tested using the IdPProxy_test.html page provided on the github repository. If everything goes fine the Id_Token should be printed in the javascript console of the browser. Alternatively this page could be used to test other IdP Server.
+IdP Proxy mechanism can be tested using the [IdPProxy_test.html](https://github.com/reTHINK-project/dev-IdPServer/blob/master/IdPProxy_test.html) page provided on the github repository. If everything goes fine the Id_Token should be printed in the javascript console of the browser. Alternatively this page could be used to test other IdP Server.
 
 
 ## Version note
