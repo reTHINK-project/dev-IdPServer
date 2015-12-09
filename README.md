@@ -6,7 +6,7 @@ This server is adapted from [agmoyano/OpenIDConnect](https://github.com/agmoyano
 Two installation mode are possible. Either running it through npm or using docker. In either case a [Redis](redis.io) DB is required. The configuration file *config.js* is used to set parameters such as server host, port and redis host and port. 
 
 #### Configuration
-The IdP Proxy must be modified before installation. More precisely the variable **SOURCEURL** must be modified so that *host* and *port* match the available public interface to the server. 
+The [IdP Proxy](https://github.com/reTHINK-project/dev-IdPServer/blob/master/public/javascripts/rethink-oidc.js) must be modified before installation. More precisely the variable **SOURCEURL** must be modified so that *host* and *port* match the available public interface to the server. 
 
 #### Using Node
 Because of modifications (bug fixes and support for RS256) not yet commited to the original OpenIDConnect module it is necessary to overwrite one of the components after installing dependencies. 
