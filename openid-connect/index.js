@@ -17,7 +17,8 @@ _ = require('lodash'),
 extend = require('extend'),
 url = require('url'),
 Q = require('q'),
-jwt = require('jwt-simple'),
+//jwt = require('jwt-simple'),
+jwt = require('jsonwebtoken'),
 util = require("util"),
 base64url = require('base64url'),
 cleanObj = require('clean-obj');
@@ -121,7 +122,7 @@ var defaults = {
                         if (values.required_sig == 'RS256') {
                                 //if (!values.key && !values.secret) {
                                 console.log("Reset keys with DH")
-                                        var key = ursa.generatePrivateKey(1024, 65537);
+                                        var key = ursa.generatePrivateKey(2048, 65537);
                                         values.secret = key.toPrivatePem('base64');
                                         values.key = key.toPublicPem('base64');
                                         
@@ -957,10 +958,18 @@ OpenIDConnect.prototype.token = function() {
                                     expiresIn: 3600,
                                     user: prev.user||null,
                                     client: prev.client.id,
-                                    idToken: jwt.encode(id_token,
-                                                        prev.client.required_sig == "RS256" ? new Buffer(prev.client.secret, 'base64').toString('binary') :
-                                                                                                       prev.client.secret,
-                                                        prev.client.required_sig),
+//                                    idToken: jwt.encode(id_token,
+//                                                        prev.client.required_sig == "RS256" ? new Buffer(prev.client.secret, 'base64').toString('binary') :
+//                                                                                                       prev.client.secret,
+//                                                        prev.client.required_sig),
+                                    //jwt.sign(payload, secretOrPrivateKey, options, [callback])
+                                    idToken: jwt.sign(id_token, prev.client.secret,
+                                                      {algorithm: 'RS256',
+                                                      expiresIn: 3600,
+                                                      audience: prev.client.key,
+                                                      issuer: req.protocol+'://'+req.headers.host,
+                                                      subject: prev.sub||prev.user||null,
+                                                      }),
                                     scope: prev.scope,
                                     auth: prev.auth?prev.auth.id:null
                             },

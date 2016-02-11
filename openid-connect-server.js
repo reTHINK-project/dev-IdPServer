@@ -6,7 +6,9 @@
 var crypto = require('crypto'),
     express = require('express'),
     expressSession = require('express-session'),
-    http = require('http'),
+    https = require('https'),
+    //http = require('http'),
+    fs = require('fs'),
     path = require('path'),
     querystring = require('querystring'),
     rs = require('connect-redis')(expressSession),
@@ -18,7 +20,10 @@ var crypto = require('crypto'),
     bodyParser = require('body-parser'),
     cookieParser = require('cookie-parser'),
     errorHandler = require('errorhandler'),
-    methodOverride = require('method-override');
+    methodOverride = require('method-override'),
+    pem2jwk = require('pem-jwk').pem2jwk,
+    jwk2pem = require('pem-jwk').jwk2pem,
+    jwt = require('jsonwebtoken');
 
 var app = express();
 
@@ -28,6 +33,11 @@ var config = require('./config');
 
 console.log(config.redis.port)
 console.log(config.redis.host)
+
+var httpsOptions = {
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem')
+}
 
 var options = {
   adapters: {
@@ -352,7 +362,38 @@ app.get('/proxy/done', oidc.check(), function(req, res, next){
         "</script>");
 });
 
+
+
 app.get('/proxy/key', oidc.use({policies: {loggedIn: false}, models: 'client'}), function(req, res, next) {
+  req.model.client.find({name: "rethink-oidc"}, function(err, client){
+    if (!err && client) {
+//        console.log("--------------------SIGNATURE--------------------------")
+//        var idToken = jwt.sign({'foo': 'bar', iat: 1455095604}, new Buffer(client[0].secret, 'base64'),
+//            {'algorithm': 'RS256',
+//            //expiresIn: 3600,
+//            //audience: prev.client.key,
+//            //issuer: req.protocol+'://'+req.headers.host,
+//            //subject: prev.sub||prev.user||null,
+//            })
+//        console.log(idToken)
+//        console.log("--------------------VERIFIED--------------------------")
+//        var verified = jwt.verify(idToken, new Buffer(client[0].key, 'base64'))
+//        console.log(verified)
+//        console.log("--------------------PEMED Key --------------------------")
+//        console.log(jwk2pem(pem2jwk(new Buffer(client[0].key, 'base64'))))
+//        console.log("--------------------JWKED Key --------------------------")
+//        console.log(pem2jwk(new Buffer(client[0].key, 'base64')))
+//        console.log(pem2jwk(new Buffer(client[0].secret, 'base64')))
+//        console.log("--------------------B64ED Key --------------------------")
+//        console.log(new Buffer(client[0].key, 'base64').toString())
+        var jwk = pem2jwk(new Buffer(client[0].key, 'base64'))
+        res.send(JSON.stringify(jwk))
+    } else {
+        next(err)
+    }
+  });
+});
+app.get('/proxy/id', oidc.use({policies: {loggedIn: false}, models: 'client'}), function(req, res, next) {
   req.model.client.find({name: "rethink-oidc"}, function(err, client){
     if (!err && client) {
         var json = {}
@@ -376,6 +417,10 @@ app.get('/proxy/verify/', function(req, res, next){
         id_token: decoded
       });
     });
+});
+
+app.get('/proxy/test', function(req, res, next){
+    res.sendFile(path.join(__dirname + '/IdPProxy_test.html'));
 });
 
 
@@ -506,7 +551,7 @@ app.get('/test', oidc.use({policies: {loggedIn: false}, models: 'client'}), func
         };
 
         // Set up the request
-        var post_req = http.request(post_options, function(pres) {
+        var post_req = https.request(post_options, function(pres) {
             pres.setEncoding('utf8');
             var data = '';
             pres.on('data', function (chunk) {
@@ -591,6 +636,9 @@ function mkFields(params) {
    next();
  };
 
-http.createServer(app).listen(app.get('port'), function(){
+var server = https.Server(httpsOptions, app)
+//var server = http.createServer(app)
+
+server.listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });

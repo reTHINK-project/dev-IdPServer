@@ -15,14 +15,17 @@
 	document.getElementById('proxy').src= url+'/.well-known/idp-proxy/'+method;
 	return false;
   }
-  function login() {
-	loginWithRP().then(function(response) {
-	  console.log("id_token :", response);
-	  console.log("token validated")
-	}, function(error) {
-	  console.error("error", error);
-	});
-	return false;
+  function login(content) {
+	idp.generateAssertion(content)
+	    .then(response => {
+	console.log("received id_token :", response)
+	idp.validateAssertion(response)
+	    .then(identity => console.log("User authenticated is "+identity.identity))
+	})
+	    .catch(error => console.error("error: ", error))
+
+	//So that we don't reload the page
+	return false
   }
   
     //validateAssertion(id_token)
@@ -32,7 +35,8 @@
 	<input type="text" id="method" name="method" placeholder="IdP Proxy Method"/>
 	<input type="submit" value="Load"/>
   </form>
-  <form onsubmit="return login();">
+  <form onsubmit="return login(this.content.value);">
+      <input type="text" id="content" name="content" placeholder="content so sign"/>
 	<input type="submit" value="Login"/>
   </form>
 	
