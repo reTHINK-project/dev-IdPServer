@@ -683,7 +683,10 @@ OpenIDConnect.prototype.auth = function() {
                         } else {
                             uri.query = resp;
                         }
+                        console.log("----------------- RDR -----------------------------")
+                        console.log(resp)
                         res.redirect(url.format(uri));
+                        console.log("----------------- RDR -----------------------------")
                     }
                 })
                 .fail(function(error) {

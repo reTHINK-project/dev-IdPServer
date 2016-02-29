@@ -10,9 +10,10 @@
   <!--<script src="http://192.168.99.100:8080/.well-known/idp-proxy/rethink-oidc"></script>-->
   <script id="proxy" type="text/javascript"></script>
   <script>
-  function test(url, method) {
-	console.log(url+"/.well-known/idp-proxy/"+method)
-	document.getElementById('proxy').src= url+'/.well-known/idp-proxy/'+method;
+  function test(url, method, sid) {
+    var src = url+"/.well-known/idp-proxy/"+method+(sid? "/"+sid : "")
+	console.log(src)
+	document.getElementById('proxy').src= src
 	return false;
   }
   function login(content) {
@@ -32,7 +33,8 @@
   </script>
   <form onsubmit="return test(this.url.value, this.method.value);">
 	<input type="text" id="url" name="url" placeholder="IdP URL"/>
-	<input type="text" id="method" name="method" placeholder="IdP Proxy Method"/>
+      <input type="text" id="method" name="method" placeholder="IdP Proxy Method"/>
+      <!-- <input type="text" id="sid" name="sid" placeholder="Optional SID"/>-->
 	<input type="submit" value="Load"/>
   </form>
   <form onsubmit="return login(this.content.value);">

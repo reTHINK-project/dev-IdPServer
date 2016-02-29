@@ -344,22 +344,32 @@ app.get('/client/:id', oidc.use('client'), function(req, res, next){
 /* ---------------------------------------------------------------------------------------------- */
 
 app.get('/.well-known/idp-proxy/rethink-oidc', function(req, res, next){
-    res.sendFile(path.join(__dirname + '/public/javascripts/rethink-oidc.js'));
+
+//    console.log(req.params.sid)
+//    fs = require('fs')
+//    fs.readFile(path.join(__dirname + '/public/javascripts/rethink-oidc.js'), 'utf8', function (err,data) {
+//      if (err)
+//        res.status(500).send('Failed to init IdP Proxy')
+//      res.send("var sid='"+req.params.sid+"'\n"+data)
+//    })
+
+    res.sendFile(path.join(__dirname + '/public/javascripts/rethink-oidc.js'))
 });
 
 //authorization endpoint
 app.get('/proxy/authorize', oidc.auth());
 
 app.get('/proxy/done', oidc.check(), function(req, res, next){
-    res.send("<script>"+
-        "var jsonString = {};"+
-        "var data = window.location.hash.substring(1).split('&').toString().split(/[=,]+/);"+
-        "for(var i=0; i<data.length; i+=2){jsonString[data[i]]=data[i+1];}"+
-        "var msg = JSON.stringify(jsonString);"+
-        //Unsecure send to all
-        "window.opener.postMessage(msg,\"*\");"+
-        "window.close();"+
-        "</script>");
+       res.send("{}")
+//    res.send("<script>"+
+//        "var jsonString = {};"+
+//        "var data = window.location.hash.substring(1).split('&').toString().split(/[=,]+/);"+
+//        "for(var i=0; i<data.length; i+=2){jsonString[data[i]]=data[i+1];}"+
+//        "var msg = JSON.stringify(jsonString);"+
+//        //Unsecure send to all
+//        "window.opener.postMessage(msg,\"*\");"+
+//        "window.close();"+
+//        "</script>");
 });
 
 
