@@ -43,7 +43,7 @@ After creating a user, register a client on **/client/register**. This client se
 * Method: implicit
 * Signature: RS256 
 
-### IdP Proxy usage
+#### IdP Proxy usage
 To use the IdP Proxy the setIdentityProvider function should be called in the WebRTC client. The user must be logged beforehand as there is no way to make him log-in during the generateAssertion procedure (yet). 
 
 ## Test
