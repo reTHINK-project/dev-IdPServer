@@ -20,7 +20,7 @@
 	idp.generateAssertion(content)
 	    .then(response => {
 	console.log("received id_token :", response)
-	idp.validateAssertion(response)
+	idp.validateAssertion(response.assertion)
 	    .then(identity => console.log("User authenticated is "+identity.identity))
 	})
 	    .catch(error => console.error("error: ", error))
@@ -38,7 +38,7 @@
 	<input type="submit" value="Load"/>
   </form>
   <form onsubmit="return login(this.content.value);">
-      <input type="text" id="content" name="content" placeholder="content so sign"/>
+      <input type="text" id="content" name="content" value="testSDPFingerprint"/>
 	<input type="submit" value="Login"/>
   </form>
 	

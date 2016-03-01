@@ -19,9 +19,11 @@ var SOURCEURL = "https://localhost:8080",
     IDPATH = '/proxy/id',
     PROXYTYPE = "rethink-oidc",
     IDSCOPE = "openid",
-    FULLSCOPE = "openid profile",
-    TYPE       =   'id_token';
+    FULLSCOPE = "openid webrtc",
+    TYPE       =   'id_token token';
   //var TYPE       =   'code';
+
+var idp_addr = {'domain': "localhost:8080", 'protocol': PROXYTYPE}
 
 if (typeof console == "undefined") {
     this.console = {
@@ -90,30 +92,26 @@ var idp = {
     return new Promise((resolve, reject) =>
       getProxyID()
       .then(ID => {
-        var _url = SOURCEURL+AUTHPATH+'?scope=' + IDSCOPE + '&client_id=' + ID +
+        var _url = SOURCEURL+AUTHPATH+'?scope=' + FULLSCOPE + '&client_id=' + ID +
                      '&redirect_uri=' + SOURCEURL + DONEPATH + '&response_type=' + TYPE +
-                     '&nonce=' + 'N-'+Math.random()
+                     '&nonce=' + 'N-'+Math.random() + '&rtcsdp='+btoa(contents)
         var myInit = { method: 'GET',
                      //headers: myHeaders,
                        credentials: 'same-origin',
                        redirect: 'follow'};
-        var urlW = 'https://localhost:8080/proxy/authorize?scope=openid&client_id=LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FHU0liM0RRRUJBUVVBQTRHTkFEQ0JpUUtCZ1FDY0Vnckx0WVRIUHAvdHFCQ3BUL1UwS1dJTQo0d2lkaGNFWEd1UkZCZDN3TlpPY0huMnRFanZaTkhmc3NvUXR0UjBOVEQ1USs5UGR0TWZJTFhxU3E3V3htMk5sCkNhNXJTVHpmT1k5NWhZQms3UVBZdTN6dEVQUHVOQ3B1Mld6QlQ2ZGg4YXpVOGUvRHZYV2RwbHpXdmpuTmduVGIKSHZOK01PWU84SGhLMkZWR2F3SURBUUFCCi0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=&redirect_uri=https://localhost:8080/proxy/done&response_type=id_token%20token&nonce=N-0.9316785699162342'
+        //var urlW = 'https://localhost:8080/proxy/authorize?scope=openid&client_id=LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FHU0liM0RRRUJBUVVBQTRHTkFEQ0JpUUtCZ1FDY0Vnckx0WVRIUHAvdHFCQ3BUL1UwS1dJTQo0d2lkaGNFWEd1UkZCZDN3TlpPY0huMnRFanZaTkhmc3NvUXR0UjBOVEQ1USs5UGR0TWZJTFhxU3E3V3htMk5sCkNhNXJTVHpmT1k5NWhZQms3UVBZdTN6dEVQUHVOQ3B1Mld6QlQ2ZGg4YXpVOGUvRHZYV2RwbHpXdmpuTmduVGIKSHZOK01PWU84SGhLMkZWR2F3SURBUUFCCi0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=&redirect_uri=https://localhost:8080/proxy/done&response_type=id_token%20token&nonce=N-0.9316785699162342'
 
-        fetch(urlW,myInit)
+        fetch(_url,myInit)
         .then(response => response.text())
         .then(hash => {
-        console.log(hash)
+        dump(hash)
           var json = {}
           var data = hash.split('&').toString().split(/[=,]+/);
           for(var i=0; i<data.length; i+=2){
             json[data[i]]=data[i+1];
           }
-          console.log('assertion: ' + json.id_token + '\n');
-          //New Id Assertion
-          var result = {}
-          assertion.identity = json.id_token
-          assertion.contents = {}
-          resolve(assertion)
+
+          resolve({'assertion': json.id_token, 'idp': idp_addr})
         })
       })
 //              // this will open a window with the URL which will open a page
@@ -155,9 +153,8 @@ var idp = {
         .then(result => {
       if (!result) reject(new Error('Invalid signature on identity assertion'))
       else {
-        console.log("Token signature validated")
-        var contents = JSON.parse(atob(payload))
-        resolve({"identity": contents.sub, "contents": contents})
+        var json = JSON.parse(atob(payload))
+        resolve({"identity": "test@localhost", "contents": atob(json.rtcsdp)})
       }})))
     )}
 }
