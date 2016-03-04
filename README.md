@@ -41,12 +41,15 @@ After creating a user, register a client on **/client/register**. This client se
 * Name: rethink-oidc
 * Redirect URI: /proxy/done
 * Method: implicit
-* Signature: RS256
+* Signature: RS256 
+
+#### IdP Proxy usage
+To use the IdP Proxy the setIdentityProvider function should be called in the WebRTC client. The user must be logged beforehand as there is no way to make him log-in during the generateAssertion procedure (yet). 
 
 ## Test
 The general state of the server can be tested on **/test/clear**
 
-IdP Proxy mechanism can be tested using the [IdPProxy_test.html](https://github.com/reTHINK-project/dev-IdPServer/blob/master/IdPProxy_test.html) page provided on the github repository. If everything goes fine the Id_Token should be printed in the javascript console of the browser. Alternatively this page could be used to test other IdP Server.
+IdP Proxy mechanism can be tested using the **proxy/test** page provided on the github repository. If everything goes fine the Id_Token should be printed in the javascript console of the browser. Alternatively this page could be used to test other IdP Server. Note that it does not test the compatibility of the IdP Proxy with the WebRTC Identity mechanism but only that the assertion can be generated validated.
 
 
 ## Version note
