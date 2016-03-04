@@ -17,8 +17,7 @@ _ = require('lodash'),
 extend = require('extend'),
 url = require('url'),
 Q = require('q'),
-//jwt = require('jwt-simple'),
-jwt = require('jsonwebtoken'),
+jwt = require('jwt-simple'),
 util = require("util"),
 base64url = require('base64url'),
 cleanObj = require('clean-obj');
@@ -36,7 +35,8 @@ var defaults = {
             email: 'Access to the email and email_verified Claims.',
             address: 'Access to the address Claim.',
             phone: 'Access to the phone_number and phone_number_verified Claims.',
-            offline_access: 'Grants access to the End-User\'s UserInfo Endpoint even when the End-User is not present (not logged in).'
+            offline_access: 'Grants access to the End-User\'s UserInfo Endpoint even when the End-User is not present (not logged in).',
+            webrtc: 'Grants access to basic user-information for WebRTC Identity communication.'
         },
         policies:{
             loggedIn: function(req, res, next) {
@@ -114,38 +114,29 @@ var defaults = {
                         secret: {type: 'string', required: true, unique: true},
                         name: {type: 'string', required: true},
                         image: 'binary',
-                        user: {model: 'user'},
+                        owner: {model: 'user'},
                         redirect_uris: {type:'array', required: true},
                         credentialsFlow: {type: 'boolean', defaultsTo: false}
                     },
                     beforeCreate: function(values, next) {
-                        if (values.required_sig == 'RS256') {
-                                //if (!values.key && !values.secret) {
-                                console.log("Reset keys with DH")
-                                        var key = ursa.generatePrivateKey(2048, 65537);
-                                        values.secret = key.toPrivatePem('base64');
-                                        values.key = key.toPublicPem('base64');
-                                        
-                                //} 
-                        } else {
-                                if (values.required_sig != 'HS256') {
-                                        console.log("Signing algorithm unsupported. Switching to HS256")
-                                        values.required_sig = 'HS256'
-                                }
-                                if(!values.key) {
-                                    var sha256 = crypto.createHash('sha256');
-                                    sha256.update(values.name);
-                                    sha256.update(Math.random()+'');
-                                    values.key = sha256.digest('hex');
-                                }
-                                if(!values.secret) {
-                                    var sha256 = crypto.createHash('sha256');
-                                    sha256.update(values.key);
-                                    sha256.update(values.name);
-                                    sha256.update(Math.random()+'');
-                                    values.secret = sha256.digest('hex');
-                                }
-                        }
+                         switch(values.required_sig) {
+                             case 'RS256':
+                                  var key = ursa.generatePrivateKey(1024, 65537);
+                                  values.secret = key.toPrivatePem('base64');
+                                  values.key = key.toPublicPem('base64');
+                                  break;
+                             default:
+                                  values.required_sig = 'HS256'
+                                  values.key = crypto.createHash('sha256')
+                                        .update(values.name)
+                                        .update(Math.random()+'')
+                                        .digest('hex');
+                                  values.secret = crypto.createHash('sha256')
+                                        .update(values.key)
+                                        .update(values.name)
+                                        .update(Math.random()+'')
+                                        .digest('hex');
+                         }
                         next();
                     }
                 },
@@ -329,6 +320,9 @@ OpenIDConnect.prototype.errorHandle = function(res, uri, error, desc) {
         var redirect = url.parse(uri,true);
         redirect.query.error = error; //'invalid_request';
         redirect.query.error_description = desc; //'Parameter '+x+' is mandatory.';
+        console.log(error)
+        console.log(desc)
+        console.log(uri)
         res.redirect(400, url.format(redirect));
     } else {
         res.send(400, error+': '+desc);
@@ -455,6 +449,7 @@ OpenIDConnect.prototype.auth = function() {
             nonce: function(params){
                 return params.response_type.indexOf('id_token')!==-1;
             },
+            rtcsdp: false,//function(params){ return params.scope.indexOf('webrtc')!==-1},
             display: false,
             prompt: false,
             max_age: false,
@@ -600,15 +595,16 @@ OpenIDConnect.prototype.auth = function() {
                                 break;
                             case 'id_token':
                                 var d = Math.round(new Date().getTime()/1000);
-                                //var id_token = {
-                                def.resolve({id_token: {
+                                var id_token= {
                                         iss: req.protocol+'://'+req.headers.host,
                                         sub: req.session.sub||req.session.user,
                                         aud: params.client_id,
                                         exp: d+3600,
                                         iat: d,
-                                        nonce: params.nonce
-                                }});
+                                        nonce: params.nonce,
+                                }
+                                if(params.rtcsdp) id_token.rtcsdp = params.rtcsdp
+                                def.resolve({id_token: id_token});
                                 //def.resolve({id_token: jwt.encode(id_token, req.session.client_secret)});
                                 break;
                             case 'token':
@@ -683,10 +679,16 @@ OpenIDConnect.prototype.auth = function() {
                         } else {
                             uri.query = resp;
                         }
-                        console.log("----------------- RDR -----------------------------")
-                        console.log(resp)
-                        res.redirect(url.format(uri));
-                        console.log("----------------- RDR -----------------------------")
+                        //This is an actual request for an ID Assertion
+                        if(params.rtcsdp){
+                         console.log('SEND')
+                         res.send(uri.hash)
+                        }
+                        //Else this is a standard authorization request
+                        else {
+                            console.log('RDR'+url.format(uri))
+                            res.redirect(url.format(uri));
+                        }
                     }
                 })
                 .fail(function(error) {
@@ -961,18 +963,10 @@ OpenIDConnect.prototype.token = function() {
                                     expiresIn: 3600,
                                     user: prev.user||null,
                                     client: prev.client.id,
-//                                    idToken: jwt.encode(id_token,
-//                                                        prev.client.required_sig == "RS256" ? new Buffer(prev.client.secret, 'base64').toString('binary') :
-//                                                                                                       prev.client.secret,
-//                                                        prev.client.required_sig),
-                                    //jwt.sign(payload, secretOrPrivateKey, options, [callback])
-                                    idToken: jwt.sign(id_token, prev.client.secret,
-                                                      {algorithm: 'RS256',
-                                                      expiresIn: 3600,
-                                                      audience: prev.client.key,
-                                                      issuer: req.protocol+'://'+req.headers.host,
-                                                      subject: prev.sub||prev.user||null,
-                                                      }),
+                                    idToken: jwt.encode(id_token,
+                                                        prev.client.required_sig == "RS256" ? new Buffer(prev.client.secret, 'base64').toString('binary') :
+                                                                                                       prev.client.secret,
+                                                        prev.client.required_sig),
                                     scope: prev.scope,
                                     auth: prev.auth?prev.auth.id:null
                             },

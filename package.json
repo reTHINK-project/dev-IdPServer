@@ -16,6 +16,7 @@
     "extend": "^3.0.0",
     "fs": "0.0.2",
     "https": "^1.0.0",
+    "jade": "^1.11.0",
     "jsonwebtoken": "^5.7.0",
     "method-override": "^2.3.5",
     "morgan": "^1.6.1",

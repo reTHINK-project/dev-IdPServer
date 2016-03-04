@@ -23,7 +23,7 @@ var SOURCEURL = "https://localhost:8080",
     TYPE       =   'id_token token';
   //var TYPE       =   'code';
 
-var idp_addr = {'domain': "localhost:8080", 'protocol': PROXYTYPE}
+var idp_addr = {'domain': "localhost", 'protocol': PROXYTYPE}
 
 if (typeof console == "undefined") {
     this.console = {
@@ -98,7 +98,9 @@ var idp = {
         var myInit = { method: 'GET',
                      //headers: myHeaders,
                        credentials: 'same-origin',
-                       redirect: 'follow'};
+                       // we don't follow redirect so that if user is not logged (redirect)
+                       // we get an error an can return login URL to the application
+                       redirect: 'error'};
         //var urlW = 'https://localhost:8080/proxy/authorize?scope=openid&client_id=LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FHU0liM0RRRUJBUVVBQTRHTkFEQ0JpUUtCZ1FDY0Vnckx0WVRIUHAvdHFCQ3BUL1UwS1dJTQo0d2lkaGNFWEd1UkZCZDN3TlpPY0huMnRFanZaTkhmc3NvUXR0UjBOVEQ1USs5UGR0TWZJTFhxU3E3V3htMk5sCkNhNXJTVHpmT1k5NWhZQms3UVBZdTN6dEVQUHVOQ3B1Mld6QlQ2ZGg4YXpVOGUvRHZYV2RwbHpXdmpuTmduVGIKSHZOK01PWU84SGhLMkZWR2F3SURBUUFCCi0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=&redirect_uri=https://localhost:8080/proxy/done&response_type=id_token%20token&nonce=N-0.9316785699162342'
 
         fetch(_url,myInit)
@@ -114,6 +116,12 @@ var idp = {
           resolve({'assertion': json.id_token, 'idp': idp_addr})
         })
       })
+      .catch(error => {
+          // We just login but we could do something better maybe?
+          // Handling authorizations and such
+          var loginURL = SOURCEURL+'/login'
+          reject({'name': 'IdPLoginError', 'loginUrl': loginURL})
+      })
 //              // this will open a window with the URL which will open a page
 //              // sent by IdP for the user to insert the credentials
 //              // the IdP validates the credentials then send a access token
@@ -126,7 +134,6 @@ var idp = {
 //            //idp.validateAssertion(res.id_token).then(
 //            //    response => resolve(response), error => reject(error))
 //          },false)
-      .catch(error => reject(error))
   )},
   /**
   * Verification of a received IdAssertion validity
@@ -154,7 +161,11 @@ var idp = {
       if (!result) reject(new Error('Invalid signature on identity assertion'))
       else {
         var json = JSON.parse(atob(payload))
-        resolve({"identity": "test@localhost", "contents": atob(json.rtcsdp)})
+        // hack to get only the name and remove any @mail.com
+        // Mozilla want us to provide a username with name@DOMAIN
+        // where DOMAIN is IdP Proxy DOMAIN
+        var name = json.sub.split('@')[0]
+        resolve({'identity': name+'@'+idp_addr.domain, 'contents': atob(json.rtcsdp)})
       }})))
     )}
 }
