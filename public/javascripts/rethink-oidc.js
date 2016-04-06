@@ -11,7 +11,7 @@
 * to the IdP Server. Alternatively some functionnalities can be done locally.
 *
 */
-var SOURCEURL = "https://localhost:8080",
+var SOURCEURL = "https://energyq.idp.rethink.orange-labs.fr",
     AUTHPATH = "/proxy/authorize",
     VERIFYPATH = "/proxy/verify",
     DONEPATH = "/proxy/done",
@@ -23,7 +23,7 @@ var SOURCEURL = "https://localhost:8080",
     TYPE       =   'id_token token';
   //var TYPE       =   'code';
 
-var idp_addr = {'domain': "localhost", 'protocol': PROXYTYPE}
+var idp_addr = {'domain': "https://energyq.idp.rethink.orange-labs.fr", 'protocol': PROXYTYPE}
 
 if (typeof console == "undefined") {
     this.console = {
