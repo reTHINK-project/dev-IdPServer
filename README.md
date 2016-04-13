@@ -53,6 +53,6 @@ IdP Proxy mechanism can be tested using the **proxy/test** page provided on the 
 
 
 ## Version note
-An initial version of the server is published (accessible here: https://energyq.rethink.orange-labs.fr/, see also testbed description). Lots of points still requires polish and some functionnalities have not been tested (multiple user declaring a proxy). 
+An initial version of the server is published (accessible here: https://energyq.idp.rethink.orange-labs.fr/, see also testbed description). Lots of points still requires polish and some functionnalities have not been tested (multiple user declaring a proxy). 
 
 Contribution to the original OpenIDConnect project should be made to ensure consistency.
