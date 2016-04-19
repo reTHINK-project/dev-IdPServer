@@ -104,6 +104,13 @@ var idp = {
         //var urlW = 'https://localhost:8080/proxy/authorize?scope=openid&client_id=LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FHU0liM0RRRUJBUVVBQTRHTkFEQ0JpUUtCZ1FDY0Vnckx0WVRIUHAvdHFCQ3BUL1UwS1dJTQo0d2lkaGNFWEd1UkZCZDN3TlpPY0huMnRFanZaTkhmc3NvUXR0UjBOVEQ1USs5UGR0TWZJTFhxU3E3V3htMk5sCkNhNXJTVHpmT1k5NWhZQms3UVBZdTN6dEVQUHVOQ3B1Mld6QlQ2ZGg4YXpVOGUvRHZYV2RwbHpXdmpuTmduVGIKSHZOK01PWU84SGhLMkZWR2F3SURBUUFCCi0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=&redirect_uri=https://localhost:8080/proxy/done&response_type=id_token%20token&nonce=N-0.9316785699162342'
 
         fetch(_url,myInit)
+        .catch(error => {
+          console.log(error)
+          // We just login but we could do something better maybe?
+          // Handling authorizations and such
+          var loginURL = SOURCEURL+'/login'
+          reject({'name': 'IdPLoginError', 'loginUrl': loginURL})
+        })
         .then(response => response.text())
         .then(hash => {
         dump(hash)
@@ -115,12 +122,6 @@ var idp = {
 
           resolve({'assertion': json.id_token, 'idp': idp_addr})
         })
-      })
-      .catch(error => {
-          // We just login but we could do something better maybe?
-          // Handling authorizations and such
-          var loginURL = SOURCEURL+'/login'
-          reject({'name': 'IdPLoginError', 'loginUrl': loginURL})
       })
 //              // this will open a window with the URL which will open a page
 //              // sent by IdP for the user to insert the credentials
