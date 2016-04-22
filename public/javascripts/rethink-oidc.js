@@ -27,7 +27,8 @@ var idp_addr = {'domain': "https://energyq.idp.rethink.orange-labs.fr", 'protoco
 
 if (typeof console == "undefined") {
     this.console = {
-        log: function () {}
+        log: function () {},
+        warn: function () {}
     };
 }
 
