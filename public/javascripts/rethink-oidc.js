@@ -171,7 +171,7 @@ var idp = {
     )}
 }
 
-if (rtcIdentityProvider) {
+if (typeof rtcIdentityProvider != 'undefined') {
   rtcIdentityProvider.register(idp);
   console.log("Proxy loaded")
 } else {
