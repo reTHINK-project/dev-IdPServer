@@ -95,7 +95,7 @@ var idp = {
       .then(ID => {
         var _url = SOURCEURL+AUTHPATH+'?scope=' + FULLSCOPE + '&client_id=' + ID +
                      '&redirect_uri=' + SOURCEURL + DONEPATH + '&response_type=' + TYPE +
-                     '&nonce=' + 'N-'+Math.random() + '&state='+btoa(contents)
+                     '&nonce=' + 'N-'+Math.random() + '&rtcsdp='+btoa(contents)
         var myInit = { method: 'GET',
                      //headers: myHeaders,
                        credentials: 'same-origin',
