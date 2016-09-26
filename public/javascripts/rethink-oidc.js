@@ -110,7 +110,7 @@ var idp = {
           // We just login but we could do something better maybe?
           // Handling authorizations and such
           var loginURL = SOURCEURL+'/login'
-          reject({'name': 'IdPLoginError', 'loginUrl': loginURL, 'requestedUrl': _url})
+          reject({'name': 'IdpLoginError', 'loginUrl': loginURL, 'requestedUrl': _url})
         })
         .then(response => response.text())
         .then(hash => {
