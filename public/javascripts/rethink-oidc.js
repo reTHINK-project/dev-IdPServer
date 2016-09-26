@@ -27,7 +27,8 @@ var idp_addr = {'domain': "https://energyq.idp.rethink.orange-labs.fr", 'protoco
 
 if (typeof console == "undefined") {
     this.console = {
-        log: function () {}
+        log: function () {},
+        warn: function () {}
     };
 }
 
@@ -94,7 +95,7 @@ var idp = {
       .then(ID => {
         var _url = SOURCEURL+AUTHPATH+'?scope=' + FULLSCOPE + '&client_id=' + ID +
                      '&redirect_uri=' + SOURCEURL + DONEPATH + '&response_type=' + TYPE +
-                     '&nonce=' + 'N-'+Math.random() + '&rtcsdp='+btoa(contents)
+                     '&nonce=' + 'N-'+Math.random() + '&state='+btoa(contents)
         var myInit = { method: 'GET',
                      //headers: myHeaders,
                        credentials: 'same-origin',
@@ -150,28 +151,28 @@ var idp = {
     signature = signature.replace(/_/g, "/").replace(/-/g, "+")
     return new Promise((resolve, reject) =>
       getProxyKey()
-        .then(Key =>
-      crypto.subtle.importKey('jwk',Key,{ name: 'RSASSA-PKCS1-v1_5',hash: {name: "SHA-256"}},true, ['verify'])
-        .then(JWK =>
-      //crypto.verify(algo, key, signature, text2verify);
-      crypto.subtle.verify('RSASSA-PKCS1-v1_5',
+      .then(Key => crypto.subtle.importKey('jwk',Key,{ name: 'RSASSA-PKCS1-v1_5',hash: {name: "SHA-256"}},true, ['verify']))
+      .then(JWK =>
+        //crypto.verify(algo, key, signature, text2verify);
+        crypto.subtle.verify('RSASSA-PKCS1-v1_5',
                            JWK,
                            str2ab(atob(signature)),   //ArrayBuffer of the signature,
-                           str2ab(header+"."+payload))//ArrayBuffer of the data
-        .then(result => {
-      if (!result) reject(new Error('Invalid signature on identity assertion'))
-      else {
-        var json = JSON.parse(atob(payload))
-        // hack to get only the name and remove any @mail.com
-        // Mozilla want us to provide a username with name@DOMAIN
-        // where DOMAIN is IdP Proxy DOMAIN
-        var name = json.sub.split('@')[0]
-        resolve({'identity': name+'@'+idp_addr.domain, 'contents': atob(json.rtcsdp)})
-      }})))
+                           str2ab(header+"."+payload)))//ArrayBuffer of the data
+      .then(result => {
+        if (!result) reject(new Error('Invalid signature on identity assertion'))
+        else {
+            var json = JSON.parse(atob(payload))
+            // hack to get only the name and remove any @mail.com
+            // Mozilla want us to provide a username with name@DOMAIN
+            // where DOMAIN is IdP Proxy DOMAIN
+            var name = json.sub.split('@')[0]
+            resolve({'identity': name+'@'+idp_addr.domain, 'contents': atob(json.rtcsdp)})
+      }})
+      .catch(error => reject(error))
     )}
 }
 
-if (rtcIdentityProvider) {
+if (typeof rtcIdentityProvider != 'undefined') {
   rtcIdentityProvider.register(idp);
   console.log("Proxy loaded")
 } else {
