@@ -23,7 +23,7 @@ var SOURCEURL = "https://energyq.idp.rethink.orange-labs.fr",
     TYPE       =   'id_token token';
   //var TYPE       =   'code';
 
-var idp_addr = {'domain': "https://energyq.idp.rethink.orange-labs.fr", 'protocol': PROXYTYPE}
+var idp_addr = {'domain': "energyq.idp.rethink.orange-labs.fr", 'protocol': PROXYTYPE}
 
 if (typeof console == "undefined") {
     this.console = {
