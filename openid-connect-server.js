@@ -78,6 +78,9 @@ app.use('/proxy', require('./routes/proxy')(oidc))
 app.get('/.well-known/idp-proxy/rethink-oidc', function(req, res, next){
   res.sendFile(path.join(__dirname + '/public/javascripts/rethink-oidc.js'))
 });
+app.get('/.well-known/idp-proxy/stubed-proxy', function(req, res, next){
+  res.sendFile(path.join(__dirname + '/public/javascripts/stubed-proxy.js'))
+});
 app.use('/test', require('./routes/test')(oidc, https, app))
 
 // development only

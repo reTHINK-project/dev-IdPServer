@@ -17,7 +17,7 @@ var SOURCEURL = "https://energyq.idp.rethink.orange-labs.fr",
     DONEPATH = "/proxy/done",
     KEYPATH = '/proxy/key',
     IDPATH = '/proxy/id',
-    PROXYTYPE = "rethink-oidc",
+    PROXYTYPE = "stubed-proxy",
     IDSCOPE = "openid",
     FULLSCOPE = "openid webrtc",
     TYPE       =   'id_token token';
@@ -27,8 +27,7 @@ var idp_addr = {'domain': "https://energyq.idp.rethink.orange-labs.fr", 'protoco
 
 if (typeof console == "undefined") {
     this.console = {
-        log: function () {},
-        warn: function () {}
+        log: function () {}
     };
 }
 
@@ -95,7 +94,7 @@ var idp = {
       .then(ID => {
         var _url = SOURCEURL+AUTHPATH+'?scope=' + FULLSCOPE + '&client_id=' + ID +
                      '&redirect_uri=' + SOURCEURL + DONEPATH + '&response_type=' + TYPE +
-                     '&nonce=' + 'N-'+Math.random() + '&state='+btoa(contents)
+                     '&nonce=' + 'N-'+Math.random() + '&rtcsdp='+btoa(contents)
         var myInit = { method: 'GET',
                      //headers: myHeaders,
                        credentials: 'same-origin',
@@ -105,13 +104,6 @@ var idp = {
         //var urlW = 'https://localhost:8080/proxy/authorize?scope=openid&client_id=LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FHU0liM0RRRUJBUVVBQTRHTkFEQ0JpUUtCZ1FDY0Vnckx0WVRIUHAvdHFCQ3BUL1UwS1dJTQo0d2lkaGNFWEd1UkZCZDN3TlpPY0huMnRFanZaTkhmc3NvUXR0UjBOVEQ1USs5UGR0TWZJTFhxU3E3V3htMk5sCkNhNXJTVHpmT1k5NWhZQms3UVBZdTN6dEVQUHVOQ3B1Mld6QlQ2ZGg4YXpVOGUvRHZYV2RwbHpXdmpuTmduVGIKSHZOK01PWU84SGhLMkZWR2F3SURBUUFCCi0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=&redirect_uri=https://localhost:8080/proxy/done&response_type=id_token%20token&nonce=N-0.9316785699162342'
 
         fetch(_url,myInit)
-        .catch(error => {
-          console.log(error)
-          // We just login but we could do something better maybe?
-          // Handling authorizations and such
-          var loginURL = SOURCEURL+'/login'
-          reject({'name': 'IdPLoginError', 'loginUrl': loginURL})
-        })
         .then(response => response.text())
         .then(hash => {
         dump(hash)
@@ -123,6 +115,12 @@ var idp = {
 
           resolve({'assertion': json.id_token, 'idp': idp_addr})
         })
+      })
+      .catch(error => {
+          // We just login but we could do something better maybe?
+          // Handling authorizations and such
+          var loginURL = SOURCEURL+'/login'
+          reject({'name': 'IdPLoginError', 'loginUrl': loginURL})
       })
 //              // this will open a window with the URL which will open a page
 //              // sent by IdP for the user to insert the credentials
@@ -151,30 +149,124 @@ var idp = {
     signature = signature.replace(/_/g, "/").replace(/-/g, "+")
     return new Promise((resolve, reject) =>
       getProxyKey()
-      .then(Key => crypto.subtle.importKey('jwk',Key,{ name: 'RSASSA-PKCS1-v1_5',hash: {name: "SHA-256"}},true, ['verify']))
-      .then(JWK =>
-        //crypto.verify(algo, key, signature, text2verify);
-        crypto.subtle.verify('RSASSA-PKCS1-v1_5',
+        .then(Key =>
+      crypto.subtle.importKey('jwk',Key,{ name: 'RSASSA-PKCS1-v1_5',hash: {name: "SHA-256"}},true, ['verify'])
+        .then(JWK =>
+      //crypto.verify(algo, key, signature, text2verify);
+      crypto.subtle.verify('RSASSA-PKCS1-v1_5',
                            JWK,
                            str2ab(atob(signature)),   //ArrayBuffer of the signature,
-                           str2ab(header+"."+payload)))//ArrayBuffer of the data
-      .then(result => {
-        if (!result) reject(new Error('Invalid signature on identity assertion'))
-        else {
-            var json = JSON.parse(atob(payload))
-            // hack to get only the name and remove any @mail.com
-            // Mozilla want us to provide a username with name@DOMAIN
-            // where DOMAIN is IdP Proxy DOMAIN
-            var name = json.sub.split('@')[0]
-            resolve({'identity': name+'@'+idp_addr.domain, 'contents': atob(json.rtcsdp)})
-      }})
-      .catch(error => reject(error))
+                           str2ab(header+"."+payload))//ArrayBuffer of the data
+        .then(result => {
+      if (!result) reject(new Error('Invalid signature on identity assertion'))
+      else {
+        var json = JSON.parse(atob(payload))
+        // hack to get only the name and remove any @mail.com
+        // Mozilla want us to provide a username with name@DOMAIN
+        // where DOMAIN is IdP Proxy DOMAIN
+        var name = json.sub.split('@')[0]
+        resolve({'identity': name+'@'+idp_addr.domain, 'contents': atob(json.rtcsdp)})
+      }})))
     )}
 }
 
-if (typeof rtcIdentityProvider != 'undefined') {
+/*
+if (rtcIdentityProvider) {
   rtcIdentityProvider.register(idp);
   console.log("Proxy loaded")
 } else {
   console.warn('IdP not running in the right sandbox');
+}
+*/
+
+/**
+* Identity Provider Proxy Protocol Stub
+*/
+class RethinkOidcProtoStub {
+
+  /**
+  * Constructor of the IdpProxy Stub
+  * The constructor add a listener in the messageBus received and start a web worker with the idpProxy received
+  *
+  * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
+  * @param  {Message.Message}                           busPostMessage     configuration
+  * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
+  */
+ constructor(runtimeProtoStubURL, bus, config) {
+   let _this = this;
+   _this.runtimeProtoStubURL = runtimeProtoStubURL;
+   _this.messageBus = bus;
+   _this.config = config;
+
+   _this.messageBus.addListener('*', function(msg) {
+     if (msg.to == 'domain://orange.com') {
+       /*let newValue = IdpProxy.generateAssertion();
+       let message = {id: msg.id, type: 'response', to: msg.from, from: msg.to,
+                      body: {code: 200, value: newValue, bus: bus, runtimeProtoStubURL: runtimeProtoStubURL}};
+       _this.messageBus.postMessage(message);*/
+       _this.requestToIdp(msg);
+     }
+   });
+ }
+
+  /**
+  * Function that see the intended method in the message received and call the respective function
+  *
+  * @param {message}  message received in the messageBus
+  */
+  requestToIdp(msg) {
+    let _this = this;
+    let params = msg.body.params;
+
+    switch (msg.body.method) {
+      case 'generateAssertion':
+        idp.generateAssertion(params.contents, params.origin, params.usernameHint).then(
+          function(value) { _this.replyMessage(msg, value);},
+
+          function(error) { _this.replyMessage(msg, error);}
+        );
+        break;
+      case 'validateAssertion':
+        idp.validateAssertion(params.assertion, params.origin).then(
+          function(value) { _this.replyMessage(msg, value);},
+
+          function(error) { _this.replyMessage(msg, error);}
+        );
+        break;
+      default:
+        break;
+    }
+  }
+
+
+  /**
+  * This function receives a message and a value. It replies the value to the sender of the message received
+  *
+  * @param  {message}   message received
+  * @param  {value}     value to include in the new message to send
+  */
+  replyMessage(msg, value) {
+    let _this = this;
+
+    let message = {id: msg.id, type: 'response', to: msg.from, from: msg.to,
+                   body: {code: 200, value: value}};
+
+    _this.messageBus.postMessage(message);
+  }
+}
+
+// export default IdpProxyProtoStub;
+
+/**
+ * To activate this protocol stub, using the same method for all protostub.
+ * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
+ * @param  {Message.Message}                           busPostMessage     configuration
+ * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
+ * @return {Object} Object with name and instance of ProtoStub
+ */
+export default function activate(url, bus, config) {
+  return {
+    name: 'RethinkOidcProtoStub',
+    instance: new RethinkOidcProtoStub(url, bus, config)
+  };
 }
