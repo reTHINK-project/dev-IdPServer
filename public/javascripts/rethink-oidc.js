@@ -159,7 +159,7 @@ var idp = {
                            str2ab(atob(signature)),   //ArrayBuffer of the signature,
                            str2ab(header+"."+payload)))//ArrayBuffer of the data
       .then(result => {
-        if (!result) reject({'name':'IdPValidateError' 'error':'162: Invalid signature on identity assertion'})
+        if (!result) reject({'name':'IdpError' 'message':'162: Invalid signature on identity assertion'})
         else {
             var json = JSON.parse(atob(payload))
             // hack to get only the name and remove any @mail.com
@@ -168,7 +168,7 @@ var idp = {
             var name = json.sub.split('@')[0]
             resolve({'identity': name+'@'+idp_addr.domain, 'contents': atob(json.rtcsdp)})
       }})
-      .catch(error => reject({'name':'IdPValidateError' 'error':'171: '+error}))
+      .catch(error => reject({'name':'IdpError' 'message':'171: '+error}))
     )}
 }
 
