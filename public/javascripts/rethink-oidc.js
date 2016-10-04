@@ -11,7 +11,7 @@
 * to the IdP Server. Alternatively some functionnalities can be done locally.
 *
 */
-var SOURCEURL = "https://192.168.99.100:8080",
+var SOURCEURL = "https://energyq.idp.rethink.orange-labs.fr",
     AUTHPATH = "/proxy/authorize",
     VERIFYPATH = "/proxy/verify",
     DONEPATH = "/proxy/done",
