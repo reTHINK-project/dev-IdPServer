@@ -6,13 +6,16 @@ module.exports = function(oidc){
     //Client list
     router.get('/', oidc.use(['client', 'consent']), function(req, res, next){
       var params = {title: 'Client', authedClients: [], ownedClients: []}
-
       req.model.client.find({owner: req.session.user}, function(err, clients){
+         console.log(clients)
          clients.forEach(function(client) {
             params.ownedClients.push({name: client.name, id: client.id})
          });
 
          req.model.consent.find({user: req.session.user}, function(err, consents){
+
+            console.log(req.session.user)
+            console.log(consents)
             consents.forEach(function(consent){
                 req.model.client.find({id: consent.client}, function(err, clients){
                    clients.forEach(function(client) {

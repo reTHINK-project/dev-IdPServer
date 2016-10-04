@@ -20,7 +20,7 @@
     "jsonwebtoken": "^5.7.0",
     "method-override": "^2.3.5",
     "morgan": "^1.6.1",
-    "openid-connect": "^1.2.4",
+    "openid-connect": "https://github.com/Sparika/OpenIDConnect.git",
     "pem-jwk": "^1.5.1",
     "ursa": "*"
   }

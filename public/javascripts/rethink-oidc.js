@@ -11,7 +11,7 @@
 * to the IdP Server. Alternatively some functionnalities can be done locally.
 *
 */
-var SOURCEURL = "https://energyq.idp.rethink.orange-labs.fr",
+var SOURCEURL = "https://192.168.99.100:8080",
     AUTHPATH = "/proxy/authorize",
     VERIFYPATH = "/proxy/verify",
     DONEPATH = "/proxy/done",
@@ -103,7 +103,6 @@ var idp = {
                        // we get an error an can return login URL to the application
                        redirect: 'error'};
         //var urlW = 'https://localhost:8080/proxy/authorize?scope=openid&client_id=LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FHU0liM0RRRUJBUVVBQTRHTkFEQ0JpUUtCZ1FDY0Vnckx0WVRIUHAvdHFCQ3BUL1UwS1dJTQo0d2lkaGNFWEd1UkZCZDN3TlpPY0huMnRFanZaTkhmc3NvUXR0UjBOVEQ1USs5UGR0TWZJTFhxU3E3V3htMk5sCkNhNXJTVHpmT1k5NWhZQms3UVBZdTN6dEVQUHVOQ3B1Mld6QlQ2ZGg4YXpVOGUvRHZYV2RwbHpXdmpuTmduVGIKSHZOK01PWU84SGhLMkZWR2F3SURBUUFCCi0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=&redirect_uri=https://localhost:8080/proxy/done&response_type=id_token%20token&nonce=N-0.9316785699162342'
-
         fetch(_url,myInit)
         .catch(error => {
           console.log(error)
