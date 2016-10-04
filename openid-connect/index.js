@@ -655,10 +655,12 @@ OpenIDConnect.prototype.auth = function() {
                                 var hbuf = crypto.createHmac('sha256', req.session.client_secret).update(resp.access_token).digest();
                                 resp.id_token.at_hash = base64url(hbuf.toString('ascii', 0, hbuf.length/2));
                                 //resp.id_token = jwt.encode(resp.id_token, new Buffer(req.session.client_secret, 'base64').toString('binary'), "HS256");
+                                var jwk = pem2jwk(new Buffer(req.session.client_key, 'base64'))
                                 resp.id_token = jwt.encode(resp.id_token,
                                                         req.session.required_sig == "RS256" ? new Buffer(req.session.client_secret, 'base64').toString('binary') :
                                                                                                        req.session.client_secret,
-                                                        req.session.required_sig);
+                                                        req.session.required_sig,
+                                                        {jwk:jwk});
                             }
                             deferred.resolve({params: params, type: params.response_type != 'code'?'f':'q', resp: resp});
                         });
@@ -957,6 +959,8 @@ OpenIDConnect.prototype.token = function() {
                                     exp: d+3600,
                                     iat: d
                             };
+
+                            var jwk = pem2jwk(new Buffer(prev.client.key, 'base64'))
                             req.model.access.create({
                                     token: access,
                                     type: 'Bearer',
@@ -966,7 +970,8 @@ OpenIDConnect.prototype.token = function() {
                                     idToken: jwt.encode(id_token,
                                                         prev.client.required_sig == "RS256" ? new Buffer(prev.client.secret, 'base64').toString('binary') :
                                                                                                        prev.client.secret,
-                                                        prev.client.required_sig),
+                                                        prev.client.required_sig,
+                                                        {jwk:jwk}),
                                     scope: prev.scope,
                                     auth: prev.auth?prev.auth.id:null
                             },
