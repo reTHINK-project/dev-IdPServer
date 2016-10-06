@@ -72,17 +72,9 @@ module.exports = function(oidc){
     });
 
     router.get('/', oidc.check(), function(req, res, next){
-        var html = '<body><h1>User Page</h1><div><a href="/client">See registered clients of user</a></div>'+
-                    '<a id="register-a" href="">Register in Firefox</a>'+
-          		    '<script>'+
-          			'  var el = document.getElementById("register-a");'+
-          		    '  function sendMessage() {'+
-          			'	window.postMessage({type:"widp_register",request:{domain:"energyq.idp.rethink.orange-labs.fr", type:"rethink-oidc"}}, "*");'+
-        			'  }'+
-          			' el.onclick = sendMessage;'+
-          		    '</script>'+
-          		    '</body>'
-      res.send(html);
+        var params = {username: 'toto', email: 'titi'}
+        console.log(req)
+        res.render('profile', params)
     });
 
     //User Info Endpoint
