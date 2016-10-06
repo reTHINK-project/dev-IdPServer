@@ -11,7 +11,9 @@
 * to the IdP Server. Alternatively some functionnalities can be done locally.
 *
 */
-var SOURCEURL = "https://energyq.idp.rethink.orange-labs.fr",
+var SCHEME = "https://",
+    SOURCEURL = "energyq.idp.rethink.orange-labs.fr",
+    //SOURCEURL = "https://192.168.99.100:8080",
     AUTHPATH = "/proxy/authorize",
     VERIFYPATH = "/proxy/verify",
     DONEPATH = "/proxy/done",
@@ -23,7 +25,7 @@ var SOURCEURL = "https://energyq.idp.rethink.orange-labs.fr",
     TYPE       =   'id_token token';
   //var TYPE       =   'code';
 
-var idp_addr = {'domain': "energyq.idp.rethink.orange-labs.fr", 'protocol': PROXYTYPE}
+var idp_addr = {'domain': SOURCEURL, 'protocol': PROXYTYPE}
 
 if (typeof console == "undefined") {
     this.console = {
@@ -41,7 +43,7 @@ function getProxyKey(){
         res.error != undefined ? reject(res.error) : resolve(res)
       }
     }
-    xmlhttp.open("GET", SOURCEURL+KEYPATH, true)
+    xmlhttp.open("GET", SCHEME+SOURCEURL+KEYPATH, true)
     xmlhttp.send()
   })
 }function getProxyID(){
@@ -53,7 +55,7 @@ function getProxyKey(){
          res.error != undefined ? reject(res.error) : resolve(res.key)
        }
      }
-     xmlhttp.open("GET", SOURCEURL+IDPATH, true)
+     xmlhttp.open("GET", SCHEME+SOURCEURL+IDPATH, true)
      xmlhttp.send()
    })
  }
@@ -66,7 +68,7 @@ function getProxyKey(){
          res.error != undefined ? reject(res.error) : resolve(res.key)
        }
      }
-     xmlhttp.open("GET", SOURCEURL+IDPATH, true)
+     xmlhttp.open("GET", SCHEME+SOURCEURL+IDPATH, true)
      xmlhttp.send()
    })
  }
@@ -93,27 +95,32 @@ var idp = {
     return new Promise((resolve, reject) =>
       getProxyID()
       .then(ID => {
-        var _url = SOURCEURL+AUTHPATH+'?scope=' + FULLSCOPE + '&client_id=' + ID +
-                     '&redirect_uri=' + SOURCEURL + DONEPATH + '&response_type=' + TYPE +
-                     '&nonce=' + 'N-'+Math.random() + '&rtcsdp='+btoa(contents)
-        var myInit = { method: 'GET',
-                     //headers: myHeaders,
-                       credentials: 'same-origin',
-                       // we don't follow redirect so that if user is not logged (redirect)
-                       // we get an error an can return login URL to the application
-                       redirect: 'error'};
+        var _url =   SCHEME+SOURCEURL+AUTHPATH+
+                     '?scope=' + FULLSCOPE +
+                     '&client_id=' + ID +
+                     '&redirect_uri=' + SCHEME+ SOURCEURL + DONEPATH +
+                     '&response_type=' + TYPE +
+                     '&nonce=' + 'N-'+Math.random() +
+                     '&rtcsdp='+btoa(contents)
+        var myInit = {method: 'GET',
+                      //headers: myHeaders,
+                      credentials: 'same-origin',
+                      // we don't follow redirect so that if user is not logged (redirect)
+                      // we get an error an can return login URL to the application
+                      //redirect: 'error'
+                     };
         //var urlW = 'https://localhost:8080/proxy/authorize?scope=openid&client_id=LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FHU0liM0RRRUJBUVVBQTRHTkFEQ0JpUUtCZ1FDY0Vnckx0WVRIUHAvdHFCQ3BUL1UwS1dJTQo0d2lkaGNFWEd1UkZCZDN3TlpPY0huMnRFanZaTkhmc3NvUXR0UjBOVEQ1USs5UGR0TWZJTFhxU3E3V3htMk5sCkNhNXJTVHpmT1k5NWhZQms3UVBZdTN6dEVQUHVOQ3B1Mld6QlQ2ZGg4YXpVOGUvRHZYV2RwbHpXdmpuTmduVGIKSHZOK01PWU84SGhLMkZWR2F3SURBUUFCCi0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQo=&redirect_uri=https://localhost:8080/proxy/done&response_type=id_token%20token&nonce=N-0.9316785699162342'
         fetch(_url,myInit)
         .catch(error => {
           console.log(error)
           // We just login but we could do something better maybe?
           // Handling authorizations and such
-          var loginURL = SOURCEURL+'/login'
+          var loginURL = SCHEME+SOURCEURL+'/login'
           reject({'name': 'IdpLoginError', 'loginUrl': loginURL, 'requestedUrl': _url})
         })
         .then(response => response.text())
         .then(hash => {
-        dump(hash)
+          console.log(hash)
           var json = {}
           var data = hash.split('&').toString().split(/[=,]+/);
           for(var i=0; i<data.length; i+=2){

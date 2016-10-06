@@ -22,6 +22,6 @@
     "morgan": "^1.6.1",
     "openid-connect": "https://github.com/Sparika/OpenIDConnect.git",
     "pem-jwk": "^1.5.1",
-    "ursa": "*"
+    "ursa": "^0.9.1"
   }
 }
