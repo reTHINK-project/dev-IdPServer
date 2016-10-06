@@ -71,7 +71,7 @@ app.set('view engine', 'jade');
 // ROUTES Definitions
 app.use('/', require('./routes/index')(oidc))
 app.use('/idp-admin', require('./routes/admin'))
-app.use('/user', require('./routes/profile')(oidc))
+app.use('/profile', require('./routes/profile')(oidc))
 app.use('/client', require('./routes/client')(oidc))
 app.use('/', require('./routes/auth')(oidc))
 app.use('/proxy', require('./routes/proxy')(oidc))
@@ -82,6 +82,8 @@ app.get('/.well-known/idp-proxy/rethink-proxy', function(req, res, next){
   res.sendFile(path.join(__dirname + '/public/javascripts/rethink-proxy.js'))
 });
 //app.use('/test', require('./routes/test')(oidc, https, app))
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 // development only
 if ('development' == app.get('env')) {

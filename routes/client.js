@@ -6,6 +6,7 @@ module.exports = function(oidc){
     //Client list
     router.get('/', oidc.use(['client', 'consent']), function(req, res, next){
       var params = {title: 'Client', authedClients: [], ownedClients: []}
+          params.me = req.session.me
       req.model.client.find({owner: req.session.user}, function(err, clients){
          console.log(clients)
          clients.forEach(function(client) {
@@ -13,9 +14,6 @@ module.exports = function(oidc){
          });
 
          req.model.consent.find({user: req.session.user}, function(err, consents){
-
-            console.log(req.session.user)
-            console.log(consents)
             consents.forEach(function(consent){
                 req.model.client.find({id: consent.client}, function(err, clients){
                    clients.forEach(function(client) {
@@ -30,7 +28,7 @@ module.exports = function(oidc){
 
     //Client register form
     router.get('/register', oidc.use('client'), function(req, res, next) {
-        res.render('client/register',{title: 'Register Client'})
+        res.render('client/register',{title: 'Register Client', me: req.session.me})
     });
 
     //process client register

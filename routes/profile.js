@@ -71,10 +71,8 @@ module.exports = function(oidc){
       });
     });
 
-    router.get('/', oidc.check(), function(req, res, next){
-        var params = {username: 'toto', email: 'titi'}
-        console.log(req)
-        res.render('profile', params)
+    router.get('/', oidc.check(), oidc.use({models: 'user'}), function(req, res, next){
+        res.render('profile', {me:req.session.me})
     });
 
     //User Info Endpoint

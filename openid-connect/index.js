@@ -326,6 +326,7 @@ OpenIDConnect.prototype.errorHandle = function(res, uri, error, desc) {
         console.log(uri)
         res.redirect(400, url.format(redirect));
     } else {
+        //throw {type: 'error', error: error, msg: desc};
         res.send(400, error+': '+desc);
     }
 };
@@ -468,8 +469,6 @@ OpenIDConnect.prototype.auth = function() {
             function(req, res, next) {
                 Q(req.parsedParams).then(function(params) {
                     //Step 2: Check if response_type is supported and client_id is valid.
-
-    console.log('Step 2')
                     var deferred = Q.defer();
                     switch(params.response_type) {
                     case 'none':
@@ -492,6 +491,7 @@ OpenIDConnect.prototype.auth = function() {
                         } else {
                             req.session.client_id = model.id;
                             req.session.client_secret = model.secret;
+                            req.session.client_key = model.key;
                             //Find required signature by client
                             req.session.required_sig = model.required_sig
                             deferred.resolve(params);
@@ -501,7 +501,6 @@ OpenIDConnect.prototype.auth = function() {
                     return deferred.promise;
                 }).then(function(params){
                     //Step 3: Check if scopes are valid, and if consent was given.
-    console.log('Step 3')
                     var deferred = Q.defer();
                     var reqsco = params.scope.split(' ');
                     req.session.scopes = {};
@@ -544,7 +543,6 @@ OpenIDConnect.prototype.auth = function() {
                     return deferred.promise;
                 }).then(function(params){
                     //Step 5: create responses
-                    console.log('Step 5')
                     if(params.response_type == 'none') {
                         return {params: params, resp: {}};
                     } else {
@@ -650,27 +648,25 @@ OpenIDConnect.prototype.auth = function() {
                         });
 
                         Q.allSettled(promises).then(function(results) {
-                    console.log('All settled')
                             var resp = {};
                             for(var i in results) {
                                 resp = extend(resp, results[i].value||{});
                             }
                             if(resp.access_token && resp.id_token) {
                                 var hbuf = crypto.createHmac('sha256', req.session.client_secret).update(resp.access_token).digest();
-                                console.log('jwk?')
                                 resp.id_token.at_hash = base64url(hbuf.toString('ascii', 0, hbuf.length/2));
-                                console.log(req.session)
+                                if(!req.session.client_key){
+                                    console.log(req.session)
+                                    throw new Error('No client key in session')
+                                }
                                 var key = new Buffer(req.session.client_key, 'base64').toString("ascii")
-                                console.log(key)
                                 var jwk = pem2jwk(key)
-                                console.log(jwk)
                                 resp.id_token = jwt.encode(resp.id_token,
                                                            req.session.required_sig == "RS256" ?
                                                                 new Buffer(req.session.client_secret, 'base64').toString('binary') :
                                                                 req.session.client_secret,
                                                            req.session.required_sig,
                                                            {header:{jwk:jwk}});
-                                console.log('done')
                             }
                             deferred.resolve({params: params, type: params.response_type != 'code'?'f':'q', resp: resp});
                         });
@@ -693,7 +689,6 @@ OpenIDConnect.prototype.auth = function() {
                         }
                         //This is an actual request for an ID Assertion
                         if(params.rtcsdp){
-                         console.log('SEND')
                          res.send(uri.hash)
                         }
                         //Else this is a standard authorization request
@@ -705,6 +700,7 @@ OpenIDConnect.prototype.auth = function() {
                 })
                 .fail(function(error) {
                     if(error.type == 'error') {
+                        console.log(error)
                         self.errorHandle(res, error.uri, error.error, error.msg);
                     } else {
                         res.redirect(error.uri);
@@ -969,7 +965,10 @@ OpenIDConnect.prototype.token = function() {
                                     exp: d+3600,
                                     iat: d
                             };
-                            console.log('encoding with header ... ')
+                            if(!req.session.client_key){
+                                console.log(req.session)
+                                throw new Error('No client key in session')
+                            }
                             var jwk = pem2jwk(new Buffer(prev.client.key, 'base64').toString('ascii'))
                             req.model.access.create({
                                     token: access,
@@ -1211,7 +1210,8 @@ OpenIDConnect.prototype.removetokens = function() {
                         }
                     });
                 } else {
-                    self.errorHandle(res, null, 'unauthorized_client', 'No access token found.');
+                    next(new Error('No access token found'))
+                    //self.errorHandle(res, null, 'unauthorized_client', 'No access token found.');
                 }
             }
             ];
