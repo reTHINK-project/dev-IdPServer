@@ -112,7 +112,7 @@ var idp = {
           })
         )
     }
-  )},
+  },
   /**
   * Verification of a received IdAssertion validity
   * Can also be used to validate token received by IdP
