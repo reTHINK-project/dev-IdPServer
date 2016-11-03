@@ -33,6 +33,17 @@ module.exports = function(oidc){
         }
       });
     });
+    router.get('/keyset', oidc.use({policies: {loggedIn: false}, models: 'client'}), function(req, res, next) {
+        req.model.client.find({name: "rethink-oidc"}, function(err, client){
+        if (!err && client) {
+            var jwk = pem2jwk(new Buffer(client[0].key, 'base64'))
+            var jku = {keys: [jwk]}
+            res.send(JSON.stringify(jku))
+        } else {
+            next(err)
+        }
+      });
+    });
     router.get('/id', oidc.use({policies: {loggedIn: false}, models: 'client'}), function(req, res, next) {
       req.model.client.find({name: "rethink-oidc"}, function(err, client){
         if (!err && client) {
