@@ -8,8 +8,10 @@ block content
   p
     a(href='/client') See my clients
 
+  script(src="/javascripts/wid_api.js")
   script.
-    function sendMessage() {
-        window.postMessage({type:"widp_register",request:{domain:"energyq.idp.rethink.orange-labs.fr", type:"rethink-oidc"}}, "*");
-        }
-    document.getElementById("register-a").onclick = sendMessage;
+      el = document.getElementById('register-a');
+        function register() {
+            wid_register('#{params.iss}', '#{params.sub}', '#{params.type}', '#{params.name}')
+      	}
+      document.getElementById("register-a").onclick = register;

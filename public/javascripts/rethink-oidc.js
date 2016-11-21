@@ -12,8 +12,8 @@
 *
 */
 var SCHEME = "https://",
-    SOURCEURL = "energyq.idp.rethink.orange-labs.fr",
-    //SOURCEURL = '192.168.99.100:8080',
+    //SOURCEURL = "energyq.idp.rethink.orange-labs.fr",
+    SOURCEURL = '192.168.99.100:8080',
     AUTHPATH = "/proxy/authorize",
     VERIFYPATH = "/proxy/verify",
     DONEPATH = "/proxy/done",
@@ -22,7 +22,8 @@ var SCHEME = "https://",
     PROXYTYPE = "rethink-oidc",
     IDSCOPE = "openid",
     FULLSCOPE = "openid webrtc",
-    TYPE       =   'id_token token';
+    TYPE       =   'id_token token',
+    RESPONSE_MODE = 'body'
   //var TYPE       =   'code';
 
 var idp_addr = {'domain': SOURCEURL, 'protocol': PROXYTYPE}
@@ -101,7 +102,8 @@ var idp = {
                      '&redirect_uri=' + SCHEME+ SOURCEURL + DONEPATH +
                      '&response_type=' + TYPE +
                      '&nonce=' + 'N-'+Math.random() +
-                     '&rtcsdp='+btoa(contents)
+                     '&rtcsdp='+btoa(contents)+
+                     '&response_mode='+RESPONSE_MODE
         var myInit = {method: 'GET',
                       //headers: myHeaders,
                       credentials: 'same-origin',
@@ -113,28 +115,30 @@ var idp = {
         console.log(_url)
 
         fetch(_url,myInit)
+        .then(response => {
+            if(response.redirected){
+                //Change response_mode=body to default, will make proxy/done close the popup after login
+                var loginUrl = response.url.replace('%26response_mode%3D'+RESPONSE_MODE, '')
+                reject({'name': 'IdpLoginError', 'loginUrl': loginUrl, 'requestedUrl': _url})
+            }
+            else
+                return response.text()
+        })
+        .then(text => {
+          var json = {}
+          var data = text.split('&').toString().split(/[=,]+/);
+          for(var i=0; i<data.length; i+=2){
+            json[data[i]]=data[i+1];
+          }
+
+          resolve({'assertion': json.id_token, 'idp': idp_addr})
+        })
         .catch(error => {
           console.log(error)
           // We just login but we could do something better maybe?
           // Handling authorizations and such
           var loginURL = SCHEME+SOURCEURL+'/login'
           reject({'name': 'IdpLoginError', 'loginUrl': loginURL, 'requestedUrl': _url})
-        })
-        .then(response => {
-            if(response.redirected)
-                reject({'name': 'IdpLoginError', 'loginUrl': response.url, 'requestedUrl': _url})
-            else
-                return response.text()
-        })
-        .then(text => {
-
-          var json = {}
-          var data = text.split('&').toString().split(/[=,]+/);
-          for(var i=0; i<data.length; i+=2){
-            json[data[i]]=data[i+1];
-        }
-
-          resolve({'assertion': json.id_token, 'idp': idp_addr})
         })
       })
 //              // this will open a window with the URL which will open a page

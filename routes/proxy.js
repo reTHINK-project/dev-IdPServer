@@ -9,16 +9,18 @@ module.exports = function(oidc){
     router.get('/authorize', oidc.auth());
 
     router.get('/done', oidc.check(), function(req, res, next){
-           res.send("{}")
-    //    res.send("<script>"+
-    //        "var jsonString = {};"+
-    //        "var data = window.location.hash.substring(1).split('&').toString().split(/[=,]+/);"+
-    //        "for(var i=0; i<data.length; i+=2){jsonString[data[i]]=data[i+1];}"+
-    //        "var msg = JSON.stringify(jsonString);"+
-    //        //Unsecure send to all
-    //        "window.opener.postMessage(msg,\"*\");"+
-    //        "window.close();"+
-    //        "</script>");
+    //       res.send("{}")
+        res.send("<script>"+
+            "var jsonString = {};"+
+            "var data = window.location.hash.substring(1).split('&').toString().split(/[=,]+/);"+
+            "for(var i=0; i<data.length; i+=2){jsonString[data[i]]=data[i+1];}"+
+            //"var msg = JSON.stringify(jsonString);"+
+
+            "window.opener.postMessage({type:'wid_response', response:jsonString.id_token}, '*');"+
+            //Unsecure send to all
+            //"window.opener.postMessage('close_me',\"*\");"+
+            "window.close();"+
+            "</script>");
     });
 
 

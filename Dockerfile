@@ -5,6 +5,6 @@ FROM node:onbuild
 RUN	    npm install
 
 # Overwrite openid-connect
-COPY	./openid-connect/index.js ./node_modules/openid-connect/index.js
+# COPY	./openid-connect/index.js ./node_modules/openid-connect/index.js
 
 EXPOSE	8080

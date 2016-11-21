@@ -32,7 +32,7 @@ module.exports = function(oidc){
                 }
             else {
                 req.session.me = {username: user.given_name, email: user.email}
-                res.redirect(req.param('return_uri')||'/profile');
+                res.redirect(req.query.redirect_uri||req.query.return_url||'/profile');
             }
         })
     };

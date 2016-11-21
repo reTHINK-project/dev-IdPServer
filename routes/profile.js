@@ -72,7 +72,7 @@ module.exports = function(oidc){
     });
 
     router.get('/', oidc.check(), oidc.use({models: 'user'}), function(req, res, next){
-        res.render('profile', {me:req.session.me})
+        res.render('profile', {me:req.session.me, params:{iss:req.headers.host, sub:req.session.me.email, type:'rethink-oidc', name:req.session.me.email}})
     });
 
     //User Info Endpoint
