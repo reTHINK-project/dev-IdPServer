@@ -17,7 +17,7 @@
 	return false;
   }
   function login(content) {
-	idp.generateAssertion(content)
+	idp.generateAssertion(content, '', 'acr=-1')
 	    .then(response => {
 	console.log("received id_token :", response)
 	idp.validateAssertion(response.assertion)

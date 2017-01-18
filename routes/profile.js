@@ -5,6 +5,7 @@ module.exports = function(oidc){
     //user creation form
     router.get('/create', function(req, res, next) {
       var head = '<head><title>Sign in</title></head>';
+
       var inputs = '';
       //var fields = mkFields(oidc.model('user').attributes);
       var fields = {

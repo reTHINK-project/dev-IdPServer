@@ -91,7 +91,7 @@ var idp = {
   /**
   * Generation of an IdAssertion through OIDC IdP
   */
-  generateAssertion: (contents /*, origin, hint */) => {
+  generateAssertion: (contents , origin, hint) => {
   // TODO : sign contents in the Id Token
     return new Promise((resolve, reject) =>
       getProxyID()
@@ -112,6 +112,10 @@ var idp = {
                       //redirect: 'error'
                      };
 
+        if(hint && hint.startsWith('acr')){
+            _url += '&acr_values='+hint.split('acr=')[1]
+        }
+
         console.log(_url)
 
         fetch(_url,myInit)
@@ -130,7 +134,6 @@ var idp = {
           for(var i=0; i<data.length; i+=2){
             json[data[i]]=data[i+1];
           }
-
           resolve({'assertion': json.id_token, 'idp': idp_addr})
         })
         .catch(error => {
@@ -159,15 +162,15 @@ var idp = {
   * Can also be used to validate token received by IdP
   * @param  {DOMString} assertion assertion
   */
-  validateAssertion: (assertion /*, origin */) => {
+  validateAssertion: (assertion, origin) => {
     assertion = assertion.split(".")
     var header = assertion[0],
         payload = assertion[1],
         signature = assertion[2]
     //TODO there is probably a better way to do that?
     signature = signature.replace(/_/g, "/").replace(/-/g, "+")
-    return new Promise((resolve, reject) =>
-      getProxyKey()
+    //return new Promise((resolve, reject) => {
+    return getProxyKey()
       .then(Key => crypto.subtle.importKey('jwk',Key,{ name: 'RSASSA-PKCS1-v1_5',hash: {name: "SHA-256"}},true, ['verify']))
       .then(JWK =>
         //crypto.verify(algo, key, signature, text2verify);
@@ -176,17 +179,24 @@ var idp = {
                            str2ab(atob(signature)),   //ArrayBuffer of the signature,
                            str2ab(header+"."+payload)))//ArrayBuffer of the data
       .then(result => {
-        if (!result) reject({'name':'IdpError', 'message':'162: Invalid signature on identity assertion'})
+        if (!result) return Promise.reject({'name':'IdpError', 'message':'162: Invalid signature on identity assertion'}) //reject
         else {
             var json = JSON.parse(atob(payload))
             // hack to get only the name and remove any @mail.com
             // Mozilla want us to provide a username with name@DOMAIN
             // where DOMAIN is IdP Proxy DOMAIN
             var name = json.sub.split('@')[0]
-            resolve({'identity': name+'@'+idp_addr.domain, 'contents': atob(json.rtcsdp)})
+            //From peerConnectionIdP.jsm
+            let provider = idp_addr.domain
+            let providerPortIdx = provider.indexOf(':');
+                if (providerPortIdx > 0) {
+                provider = provider.substring(0, providerPortIdx);
+            }
+            return Promise.resolve({'identity': name+'@'+provider, 'contents': atob(json.rtcsdp), 'acr': json.dummy_acr}) //resolve
       }})
       .catch(error => reject({'name':'IdpError', 'message':'171: '+error}))
-    )}
+    //})
+  }
 }
 
 if (typeof rtcIdentityProvider != 'undefined') {
