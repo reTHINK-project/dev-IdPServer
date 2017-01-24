@@ -85,7 +85,7 @@ app.get('/.well-known/idp-proxy/rethink-proxy', function(req, res, next){
 app.get('/.well-known/openid-configuration', function(req, res, next){
   res.send(
         {
-         "issuer": "https://"+(options.iss||192.168.99.100:8080),
+         "issuer": "https://"+(options.iss||"192.168.99.100:8080"),
          "rtcProxy": "rethink-oidc" //,
 //         "authorization_endpoint": "https://accounts.google.com/o/oauth2/v2/auth",
 //         "token_endpoint": "https://www.googleapis.com/oauth2/v4/token",
