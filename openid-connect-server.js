@@ -37,6 +37,7 @@ var options = {
   },
   login_url: '/login',
   consent_url: '/consent',
+  iss: (env == 'development' ? undefined : config.iss),
   scopes: {
     foo: 'Access to foo special resource',
     bar: 'Access to bar special resource'

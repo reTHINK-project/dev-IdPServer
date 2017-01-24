@@ -13,7 +13,7 @@
 */
 var SCHEME = "https://",
     //SOURCEURL = "energyq.idp.rethink.orange-labs.fr",
-    SOURCEURL = '192.168.99.100:8080',
+    SOURCEURL = 'energyq.idp.rethink.orange-labs.fr',
     AUTHPATH = "/proxy/authorize",
     VERIFYPATH = "/proxy/verify",
     DONEPATH = "/proxy/done",
