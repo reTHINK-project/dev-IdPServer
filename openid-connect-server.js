@@ -72,7 +72,7 @@ app.set('view engine', 'jade');
 // ROUTES Definitions
 app.use('/', require('./routes/index')(oidc))
 app.use('/idp-admin', require('./routes/admin'))
-app.use('/profile', require('./routes/profile')(oidc))
+app.use('/profile', require('./routes/profile')(oidc, options.iss))
 app.use('/client', require('./routes/client')(oidc))
 app.use('/', require('./routes/auth')(oidc))
 app.use('/proxy', require('./routes/proxy')(oidc))

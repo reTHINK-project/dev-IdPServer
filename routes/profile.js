@@ -1,4 +1,4 @@
-module.exports = function(oidc){
+module.exports = function(oidc, iss){
     var express = require('express')
     var router = express.Router()
 
@@ -73,7 +73,7 @@ module.exports = function(oidc){
     });
 
     router.get('/', oidc.check(), oidc.use({models: 'user'}), function(req, res, next){
-        res.render('profile', {me:req.session.me, params:{iss:req.headers.host, sub:req.session.me.email, type:'rethink-oidc', name:req.session.me.email}})
+        res.render('profile', {me:req.session.me, params:{iss:(iss||req.headers.host), sub:req.session.me.email, type:'rethink-oidc', name:req.session.me.email}})
     });
 
     //User Info Endpoint
