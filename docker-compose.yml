@@ -1,5 +1,9 @@
 oidc-node:
   build: .
+  environment:
+    - NODE_ENV=production
+#    - NODE_PORT=8080
+#    - OIDC_ISS=localhost:8080
   links:
     - redis
   ports:

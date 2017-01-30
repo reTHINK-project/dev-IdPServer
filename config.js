@@ -7,6 +7,6 @@ config.redis = {}
 config.redis.host = process.env.REDIS_PORT_6379_TCP_ADDR || "redis"
 config.redis.port = process.env.REDIS_PORT_6379_TCP_PORT || 6379
 
-config.iss = "energyq.idp.rethink.orange-labs.fr"
+config.iss = process.env.OIDC_ISS || "localhost:8080"
 
 module.exports = config
