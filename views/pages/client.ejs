@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+    <% include ../partials/head %>
+</head>
+<body class="container">
+    <header>
+        <% include ../partials/header %>
+    </header>
+    <div class="container">
+        <div class="row">
+            <h3 class="col-sm-10 col-sm-offset-1">OIDC Client - <%=client.name%></h3>
+        </div>
+        <div class="row">
+            <strong class="text-right col-sm-2 col-sm-offset-1">Name</strong>
+            <p class="col-sm-8"><%=client.name%></p>
+        </div>
+        <div class="row">
+            <strong class="text-right col-sm-2 col-sm-offset-1">Signature algorithm</strong>
+            <p class="col-sm-8"><%=client.required_sig%></p>
+        </div>
+        <div class="row">
+            <strong class="text-right col-sm-2 col-sm-offset-1">Key</strong>
+            <p class="col-sm-8" style="word-wrap: break-word;"><%=client.key%></p>
+        </div>
+        <div class="row">
+            <strong class="text-right col-sm-2 col-sm-offset-1">Secret</strong>
+            <p class="col-sm-8" style="word-wrap: break-word;"><%=client.secret%></p>
+        </div>
+        <div class="row">
+            <strong class="text-right col-sm-2 col-sm-offset-1">Redirect URIs</strong>
+        </div>
+        <% for(var i=0; i<client.redirect_uris.length; i++) {%>
+            <div class="row">
+                <p class="col-sm-8 col-sm-offset-3"><%=client.redirect_uris[i]%></p>
+            </div>
+        <% } %>
+    </div>
+    <footer>
+        <% include ../partials/footer %>
+    </footer>
+</body>
+</html>
