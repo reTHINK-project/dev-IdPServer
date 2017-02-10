@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+    <% include ../partials/head %>
+</head>
+<body class="container">
+    <header>
+        <% include ../partials/header %>
+    </header>
+    <div class="container">
+        <div class="row">
+            <h3 class="col-sm-10 col-sm-offset-1">OIDC User Dashboard</h3>
+        </div>
+        <div class="row">
+            <div class="col-sm-2 col-sm-offset-1 text-right">
+                <button class="btn btn-default" onclick="wid_register('#{connect.iss}', '#{connect.sub}', '#{connect.type}', '#{connect.name}');return false;">
+                    <img src="/icon64.png" height="32" width="32"> Register
+                </button>
+            </div>
+            <p class="col-sm-8" style="word-wrap: break-word;">
+                Register an identity card for <%=me.id%> in Connect. Connect let you choose the identity and identity provider
+                you want to use when logging on a website. The prototype Firefox extension for Connect is available on
+                <a href="https://addons.mozilla.org/en-US/firefox/addon/web-identity-management/">Mozilla Addons</a>.
+            </p>
+        </div>
+        <div class="row">
+            <strong class="text-right col-sm-2 col-sm-offset-1">Name</strong>
+            <p class="col-sm-8"><%=me.name%></p>
+        </div>
+        <div class="row">
+            <strong class="text-right col-sm-2 col-sm-offset-1">Given name</strong>
+            <p class="col-sm-8"><%=me.given_name%></p>
+        </div>
+        <div class="row">
+            <strong class="text-right col-sm-2 col-sm-offset-1">Middle name</strong>
+            <p class="col-sm-8"><%=me.middle_name%></p>
+        </div>
+        <div class="row">
+            <strong class="text-right col-sm-2 col-sm-offset-1">Family name</strong>
+            <p class="col-sm-8"><%=me.family_name%></p>
+        </div>
+        <div class="row">
+            <strong class="text-right col-sm-2 col-sm-offset-1">Birthdate</strong>
+            <p class="col-sm-8"><%=me.birthdate%></p>
+        </div>
+        <div class="row">
+            <strong class="text-right col-sm-2 col-sm-offset-1">Gender</strong>
+            <p class="col-sm-8"><%=me.gender%></p>
+        </div>
+        <div class="row">
+            <strong class="text-right col-sm-2 col-sm-offset-1">Email</strong>
+            <a href="mailto:<%=me.email%>" class="col-sm-8"><%=me.email%></a>
+        </div>
+        <div class="row">
+            <strong class="text-right col-sm-2 col-sm-offset-1">Phone</strong>
+            <p class="col-sm-8"><%=me.phone_number%></p>
+        </div>
+        <div class="row">
+            <strong class="text-right col-sm-2 col-sm-offset-1">Profile</strong>
+            <a href="<%='/user/'+me.id%>" class="col-sm-8"><%=me.profile%></p>
+        </div>
+    </div>
+    <footer>
+        <% include ../partials/footer %>
+    </footer>
+    <script src="/javascripts/wid_api.js"/>
+</body>
+</html>

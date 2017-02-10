@@ -5,6 +5,7 @@ var express = require('express'),
     fs = require('fs'),
     path = require('path'),
     rs = require('connect-redis')(expressSession),
+    flash    = require('connect-flash'),
     test = {
         status: 'new'
     },
@@ -56,6 +57,7 @@ app.use(bodyParser());
 app.use(methodOverride());
 app.use(cookieParser('Some Secret!!!'));
 app.use(expressSession({store: new rs({host: config.redis.host, port: config.redis.port}), secret: 'Some Secret!!!'}));
+app.use(flash()); // use connect-flash for flash messages stored in session
 // app.use(app.router);
 
 app.use(function(req, res, next) {
@@ -67,14 +69,14 @@ app.use(function(req, res, next) {
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'ejs');
 
 // ROUTES Definitions
-app.use('/', require('./routes/index')(oidc))
-app.use('/idp-admin', require('./routes/admin'))
-app.use('/profile', require('./routes/profile')(oidc, options.iss))
-app.use('/client', require('./routes/client')(oidc))
+app.use('/', require('./routes/index')(oidc, options.iss))
 app.use('/', require('./routes/auth')(oidc))
+app.use('/admin', require('./routes/admin'))
+app.use('/profile', require('./routes/profile')(oidc, options.iss))
+app.use('/clients', require('./routes/clients')(oidc))
 app.use('/proxy', require('./routes/proxy')(oidc))
 app.get('/.well-known/idp-proxy/rethink-oidc', function(req, res, next){
   res.sendFile(path.join(__dirname + '/public/javascripts/rethink-oidc.js'))
