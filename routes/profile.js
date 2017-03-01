@@ -10,9 +10,9 @@ module.exports = function(oidc, iss){
             connect:{
                 iss:(iss||req.headers.host),
                 sub:req.session.me.email,
-                proxy:'rethink-oidc',
+                proxy:"rethink-oidc",
                 name:req.session.me.email,
-                picture:'http://placehold.it/300x300'
+                picture:"http://placehold.it/300x300"
             }
         })
     });
