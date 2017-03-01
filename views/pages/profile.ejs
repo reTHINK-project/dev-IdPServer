@@ -14,7 +14,7 @@
         </div>
         <div class="row">
             <div class="col-sm-2 col-sm-offset-1 text-right">
-                <button class="btn btn-default" onclick="wid_register('<%=connect.iss%>', '<%=connect.sub%>', '<%=connect.proxy%>', '<%=connect.name%>', '<%=connect.picture%>');return false;">
+                <button class="btn btn-default" onclick="wid_register('<%= connect.iss %>', '<%=connect.sub%>', '<%= connect.proxy %>', '<%=connect.name%>', '<%= connect.picture %>'); console.log(<%=JSON.stringify(connect)%>);return false;">
                     <img src="/icon64.png" height="32" width="32"> Register
                 </button>
             </div>
