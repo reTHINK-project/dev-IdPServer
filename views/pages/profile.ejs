@@ -2,6 +2,7 @@
 <html>
 <head>
     <% include ../partials/head %>
+    <script src="/javascripts/wid_api.js"/>
 </head>
 <body class="container">
     <header>
@@ -13,7 +14,7 @@
         </div>
         <div class="row">
             <div class="col-sm-2 col-sm-offset-1 text-right">
-                <button class="btn btn-default" onclick="wid_register('#{connect.iss}', '#{connect.sub}', '#{connect.type}', '#{connect.name}');return false;">
+                <button class="btn btn-default" onclick="wid_register('<%=connect.iss>', '<%=connect.sub>', '<%=connect.proxy>', '<%=connect.name>', '<%=connect.picture>');return false;">
                     <img src="/icon64.png" height="32" width="32"> Register
                 </button>
             </div>
@@ -63,6 +64,5 @@
     <footer>
         <% include ../partials/footer %>
     </footer>
-    <script src="/javascripts/wid_api.js"/>
 </body>
 </html>

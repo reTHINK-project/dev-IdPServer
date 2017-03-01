@@ -7,7 +7,7 @@ module.exports = function(oidc, iss){
     router.get('/', oidc.check(), oidc.use({models: 'user'}), function(req, res, next){
         res.render('profile', {
             me:req.session.me,
-            params:{
+            connect:{
                 iss:(iss||req.headers.host),
                 sub:req.session.me.email,
                 proxy:'rethink-oidc',
