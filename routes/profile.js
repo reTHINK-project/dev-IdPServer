@@ -5,7 +5,16 @@ module.exports = function(oidc, iss){
 
 
     router.get('/', oidc.check(), oidc.use({models: 'user'}), function(req, res, next){
-        res.render('profile', {me:req.session.me, params:{iss:(iss||req.headers.host), sub:req.session.me.email, type:'rethink-oidc', name:req.session.me.email}})
+        res.render('profile', {
+            me:req.session.me,
+            params:{
+                iss:(iss||req.headers.host),
+                sub:req.session.me.email,
+                proxy:'rethink-oidc',
+                name:req.session.me.email,
+                picture:'http://placehold.it/300x300'
+            }
+        })
     });
 
     //User Info Endpoint

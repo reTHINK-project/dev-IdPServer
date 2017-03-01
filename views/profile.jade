@@ -12,6 +12,6 @@ block content
   script.
       el = document.getElementById('register-a');
         function register() {
-            wid_register('#{params.iss}', '#{params.sub}', '#{params.type}', '#{params.name}')
+            wid_register('#{params.iss}', '#{params.sub}', '#{params.proxy}', '#{params.name}', '#{params.picture}')
       	}
       document.getElementById("register-a").onclick = register;
