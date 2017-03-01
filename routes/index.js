@@ -7,10 +7,11 @@ module.exports = function(oidc, iss){
         res.render('pages/profile.ejs', {
             'me':req.session.me,
             'connect':{
-                'iss':(iss||req.headers.host),
-                'sub':req.session.me.email,
-                'type':'rethink-oidc',
-                'name':req.session.me.email
+                iss:(iss||req.headers.host),
+                sub:req.session.me.email,
+                proxy:'rethink-oidc',
+                name:req.session.me.email,
+                picture:'http://placehold.it/300x300'
             },
             'message':req.message
         })

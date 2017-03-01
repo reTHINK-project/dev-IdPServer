@@ -5,14 +5,14 @@ module.exports = function(oidc, iss){
 
 
     router.get('/', oidc.check(), oidc.use({models: 'user'}), function(req, res, next){
-        res.render('profile', {
+        res.render('pages/profile.ejs', {
             me:req.session.me,
             connect:{
                 iss:(iss||req.headers.host),
                 sub:req.session.me.email,
-                proxy:"rethink-oidc",
+                proxy:'rethink-oidc',
                 name:req.session.me.email,
-                picture:"http://placehold.it/300x300"
+                picture:'http://placehold.it/300x300'
             }
         })
     });
