@@ -19,6 +19,7 @@ var express = require('express'),
 var app = express();
 
 var env = process.env.NODE_ENV || 'development'
+console.log(env)
 //var config = (env == 'development' ? require('./dev_config') : require('./config'));
 var config = require('./config');
 
