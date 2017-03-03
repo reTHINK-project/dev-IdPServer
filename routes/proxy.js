@@ -9,9 +9,8 @@ module.exports = function(oidc){
     router.get('/authorize', oidc.auth());
 
     router.get('/done', oidc.check(), function(req, res, next){
-    //       res.send("{}")
         res.send("<script>"+
-            "window.opener.postMessage('LOGINDONE', '*')"
+            "window.opener.postMessage('LOGINDONE', '*')"+
 //            "var jsonString = {};"+
 //            "var data = window.location.hash.substring(1).split('&').toString().split(/[=,]+/);"+
 //            "for(var i=0; i<data.length; i+=2){jsonString[data[i]]=data[i+1];}"+
