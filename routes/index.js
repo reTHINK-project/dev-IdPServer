@@ -69,8 +69,8 @@ module.exports = function(oidc, iss){
     }
 
 
-
-    router.get('/logout', oidc.removetokens(), function(req, res, next) {
+// SBE Patch to logout
+    router.get('/logout', function(req, res, next) { // oidc.removetokens(), function(req, res, next) {
         req.session.destroy();
         res.redirect('/login');
     }, logoutError);
