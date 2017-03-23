@@ -4,16 +4,27 @@ module.exports = function(oidc, iss){
 
     //redirect to login
     router.get('/', oidc.check(), oidc.use({models: 'user'}), function(req, res) {
-        res.render('pages/profile.ejs', {
-            'me':req.session.me,
-            'connect':{
-                iss:(iss||req.headers.host),
-                sub:req.session.me.email,
-                proxy:'rethink-oidc',
-                name:req.session.me.email,
-                picture:'http://placehold.it/300x300'
-            },
-            'message':req.message
+        req.model.user.findOne({id: req.session.user}, function(err, user) {
+            if(err || !user){
+                console.log('ERROR')
+                console.log(err)
+                console.log(user)
+                req.message(err)
+                res.redirect('/login')
+            }
+            else {
+                res.render('pages/profile.ejs', {
+                    'me':user,
+                    'connect':{
+                        iss:(iss||req.headers.host),
+                        sub:req.session.me.email,
+                        proxy:'rethink-oidc',
+                        name:req.session.me.email,
+                        picture:'http://placehold.it/300x300'
+                    },
+                    'message':req.message
+                })
+            }
         })
     });
 
@@ -32,12 +43,17 @@ module.exports = function(oidc, iss){
     var validateUser = function (req, next) {
       delete req.session.error;
       req.model.user.findOne({email: req.body.email}, function(err, user) {
-          if(!err && user && user.samePassword(req.body.password)) {
+          if(err || !user){
+            console.log('User not found')
+            var error = new Error('User not found')
+            return next(error)
+          }
+          else if(!user.samePassword(req.body.password)) {
             console.log(user+" "+req.body.password+"=?"+user.password)
-            return next(null, user);
-          } else {
             var error = new Error('Username or password incorrect.');
             return next(error);
+          } else {
+            return next(null, user);
           }
       });
     };
@@ -79,14 +95,15 @@ module.exports = function(oidc, iss){
 // SIGNUP ======================================================================
 // =============================================================================
     router.get('/signup', function(req, res, next) {
-        //req.session.destroy();
+        var message = req.flash('signupError')
         res.render('pages/signup.ejs', {
-            'message':req.flash('signupError')
+            'message':message
         })
+        console.log(message)
     }, logoutError);
 
     //process user creation
-    router.post('/create', oidc.use({policies: {loggedIn: false}, models: 'user'}), function(req, res, next) {
+    router.post('/signup', oidc.use({policies: {loggedIn: false}, models: 'user'}), function(req, res, next) {
       delete req.session.error;
       req.model.user.findOne({email: req.body.email}, function(err, user) {
           if(err) {
@@ -98,18 +115,23 @@ module.exports = function(oidc, iss){
               res.redirect(req.path);
           } else {
               req.body.name = req.body.given_name+' '+(req.body.middle_name?req.body.middle_name+' ':'')+req.body.family_name;
+              req.body.birthdate = new Date(Date.parse(req.body.dob_year+'-'+req.body.dob_month+'-'+req.body.dob_day)).toISOString()
+
+              console.log(req.body)
+
               req.model.user.create(req.body, function(err, user) {
                  if(err || !user) {
                      req.flash('signupError', err?err:'User could not be created.');
                      res.redirect(req.path);
                  } else {
+                     console.log(user)
                      req.session.user = user.id;
-                     res.redirect('/user');
+                     next();
                  }
               });
           }
       });
-    });
+    }, afterLogin);
 
 
     return router

@@ -45,7 +45,14 @@ var options = {
     bar: 'Access to bar special resource'
   },
 //when this line is enabled, user email appears in tokens sub field. By default, id is used as sub.
-  models:{user:{attributes:{sub:function(){return this.email;}}}},
+  models:{
+    user:{
+        attributes:{
+            sub:function(){return this.email;},
+            picture: 'string'
+        }
+    }
+  },
   app: app
 };
 var oidc = require('openid-connect').oidc(options);
