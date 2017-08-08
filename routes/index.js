@@ -115,7 +115,13 @@ module.exports = function(oidc, iss){
               res.redirect(req.path);
           } else {
               req.body.name = req.body.given_name+' '+(req.body.middle_name?req.body.middle_name+' ':'')+req.body.family_name;
-              req.body.birthdate = new Date(Date.parse(req.body.dob_year+'-'+req.body.dob_month+'-'+req.body.dob_day)).toISOString()
+              try {
+                req.body.birthdate = new Date(Date.parse(req.body.dob_year+'-'+req.body.dob_month+'-'+req.body.dob_day)).toISOString()
+              }
+              catch (_error)
+              {
+                req.body.birthdate =  new Date("1900-01-01").toISOString();
+              }
 
               console.log(req.body)
 
